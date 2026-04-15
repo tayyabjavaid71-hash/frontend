@@ -31,10 +31,11 @@ export interface ProductImage {
 export function calculateFinalPrice(
   basePrice: number,
   priceAdjustment: number = 0,
-  oldPrice?: number
+  discountPrice?: number
 ): number {
-  const discount = oldPrice && oldPrice > basePrice ? oldPrice - basePrice : 0;
-  return Math.max(0, basePrice + priceAdjustment - discount);
+  const effectiveBase =
+    typeof discountPrice === 'number' && discountPrice >= 0 ? discountPrice : basePrice;
+  return Math.max(0, effectiveBase + priceAdjustment);
 }
 
 // ── Product Service ────────────────────────────────────────────────────────

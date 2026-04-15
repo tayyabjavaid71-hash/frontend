@@ -87,11 +87,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     bootstrapAuth();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const nextUser = session?.user ?? null;
       setUser(nextUser);
       if (nextUser?.id) {
-        await loadUserProfile(nextUser.id);
+        // Keep auth callback synchronous to avoid lock contention warnings in StrictMode.
+        void loadUserProfile(nextUser.id).catch(() => {
+          if (mounted) setProfile(null);
+        });
       } else {
         setProfile(null);
       }

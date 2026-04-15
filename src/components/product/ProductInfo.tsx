@@ -76,8 +76,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }
 
   // SRS Price Logic: Final Price = Base Price + Size Adjustment - Discount
   const priceAdjustment = activeVariation?.price_adjustment ?? 0;
-  const finalPrice = calculateFinalPrice(product.price, priceAdjustment, product.old_price);
-  const discount = product.old_price && product.old_price > product.price ? product.old_price - product.price : 0;
+  const finalPrice = calculateFinalPrice(product.price, priceAdjustment, product.discount_price);
+  const displayBase = product.discount_price ?? product.price;
+  const discount = product.old_price && product.old_price > displayBase ? product.old_price - displayBase : 0;
 
   // Stock from variation if available, else from product
   const availableStock = activeVariation?.stock ?? product.stock;
@@ -128,7 +129,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }
         <span className="text-4xl font-black text-slate-900">
           PKR {finalPrice.toLocaleString()}
         </span>
-        {product.old_price && product.old_price > product.price && (
+        {product.old_price && product.old_price > displayBase && (
           <>
             <span className="text-xl text-slate-400 line-through font-bold">PKR {product.old_price.toLocaleString()}</span>
             <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">Save PKR {discount.toLocaleString()}</span>
