@@ -3,14 +3,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProductTabsProps {
   description?: string;
+  fabric?: string;
+  careInstructions?: string;
+  includes?: string[];
+  pieces?: number;
+  work?: string;
+  color?: string;
 }
 
-export const ProductTabs: React.FC<ProductTabsProps> = ({ description }) => {
+export const ProductTabs: React.FC<ProductTabsProps> = ({ description, fabric, careInstructions, includes, pieces, work, color }) => {
   const [activeTab, setActiveTab] = useState<'details' | 'fabric' | 'size'>('details');
 
   const tabs = [
-    { id: 'details', label: 'Details', content: description || 'Premium craftsmanship meets modern luxury. This signature piece is designed for the discerning fashion enthusiast.' },
-    { id: 'fabric', label: 'Fabric & Care', content: '100% Premium Egyptian Cotton. Hand wash cold, lay flat to dry. Do not bleach. Cool iron if needed.' },
+    {
+      id: 'details',
+      label: 'Details',
+      content: description || 'Premium craftsmanship meets modern luxury. This signature piece is designed for the discerning fashion enthusiast.'
+    },
+    {
+      id: 'fabric',
+      label: 'Fabric & Care',
+      content: `${fabric || 'Premium blend'}${work ? ` · ${work}` : ''}. ${careInstructions || 'Hand wash cold, do not bleach.'}`
+    },
     { id: 'size', label: 'Size Guide', content: 'True to size. For an oversized fit, we recommend sizing up one. Models are 180cm wearing size M.' },
   ] as const;
 
@@ -57,6 +71,11 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ description }) => {
               <p className="text-slate-500 text-xs font-bold leading-loose">
                 Every JT Collection piece undergoes rigorous quality control to ensure a perfect fit and long-lasting durability.
               </p>
+              <div className="mt-5 text-[11px] text-slate-500 font-bold space-y-1">
+                <p>Pieces: {pieces || 1}</p>
+                <p>Includes: {includes && includes.length ? includes.join(', ') : 'Main Product'}</p>
+                <p>Color Family: {color || 'As shown'}</p>
+              </div>
             </div>
           </div>
         </motion.div>

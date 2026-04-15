@@ -43,7 +43,7 @@ export const productService = {
   async fetchProducts(filters: ProductQueryFilters = {}) {
     let query = supabase
       .from('products')
-      .select('*, categories(name)')
+      .select('*, categories(name, slug), subcategories(name, slug)')
       .order('created_at', { ascending: false });
 
     if (filters.search) {
@@ -70,7 +70,7 @@ export const productService = {
   async fetchProductById(id: string) {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(name)')
+      .select('*, categories(name, slug), subcategories(name, slug), product_images(*)')
       .eq('id', id)
       .single();
 

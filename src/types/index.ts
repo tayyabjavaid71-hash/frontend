@@ -2,15 +2,25 @@
 export interface Product {
   id: string;
   title: string;
+  slug?: string;
   description?: string;
   price: number;
+  discount_price?: number;
   old_price?: number;
   stock: number;
   image_url: string;
+  images?: string[];
   category_id?: string;
+  subcategory_id?: string;
   sizes?: string[];
   colors?: string[];
   fabric?: string;
+  work?: string;
+  pieces?: number;
+  includes?: string[];
+  care_instructions?: string;
+  is_new_arrival?: boolean;
+  is_on_sale?: boolean;
   season?: string;
   created_at: string;
 }
@@ -36,7 +46,7 @@ export interface OrderItem {
 }
 
 // Order Status Type
-export type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'pending_payment';
+export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'pending_payment';
 
 // Order
 export interface Order {

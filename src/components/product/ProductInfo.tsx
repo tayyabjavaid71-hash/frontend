@@ -20,12 +20,17 @@ interface ProductInfoProps {
     id: string;
     title: string;
     price: number;
+    discount_price?: number;
     old_price?: number;
     stock: number;
     sizes?: string[];
     colors?: string[];
     description?: string;
     image_url?: string;
+    fabric?: string;
+    work?: string;
+    pieces?: number;
+    includes?: string[];
   };
   onAddToCart: (product: Record<string, unknown>, variants: { size: string; color: string; quantity: number; variationId?: string }) => void;
 }
@@ -147,6 +152,26 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }
           </motion.div>
         ) : null}
       </AnimatePresence>
+
+      {/* Product Specs */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Fabric</p>
+          <p className="text-sm font-bold text-slate-800">{product.fabric || 'Premium Blend'}</p>
+        </div>
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Work</p>
+          <p className="text-sm font-bold text-slate-800">{product.work || 'Detailed Finish'}</p>
+        </div>
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Pieces</p>
+          <p className="text-sm font-bold text-slate-800">{product.pieces || 1} Piece</p>
+        </div>
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Includes</p>
+          <p className="text-sm font-bold text-slate-800">{Array.isArray(product.includes) && product.includes.length > 0 ? product.includes.join(', ') : 'Main Product'}</p>
+        </div>
+      </div>
 
       {/* Size Selector */}
       {displaySizes.length > 0 && (

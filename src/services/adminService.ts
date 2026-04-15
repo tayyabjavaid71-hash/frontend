@@ -23,6 +23,20 @@ export const adminService = {
     if (error) throw error;
     return data;
   },
+  async fetchSubcategories(categoryId?: string) {
+    let query = supabase
+      .from('subcategories')
+      .select('*, categories(name, slug)')
+      .order('name');
+
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  },
   async createCategory(category: any) {
     const { data, error } = await supabase.from('categories').insert([category]).select().single();
     if (error) throw error;
@@ -35,6 +49,20 @@ export const adminService = {
   },
   async deleteCategory(id: string) {
     const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (error) throw error;
+  },
+  async createSubcategory(subcategory: any) {
+    const { data, error } = await supabase.from('subcategories').insert([subcategory]).select().single();
+    if (error) throw error;
+    return data;
+  },
+  async updateSubcategory(id: string, updates: any) {
+    const { data, error } = await supabase.from('subcategories').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+  },
+  async deleteSubcategory(id: string) {
+    const { error } = await supabase.from('subcategories').delete().eq('id', id);
     if (error) throw error;
   },
 

@@ -25,24 +25,39 @@ const SRS_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     title: (product?.title as string) || '',
+    slug: (product?.slug as string) || '',
     price: (product?.price as number) || 0,
+    discount_price: (product?.discount_price as number) || 0,
     old_price: (product?.old_price as number) || 0,
     stock: (product?.stock as number) || 0,
     category_id: (product?.category_id as string) || '',
+    subcategory_id: (product?.subcategory_id as string) || '',
     description: (product?.description as string) || '',
     image_url: (product?.image_url as string) || '',
+    images: Array.isArray(product?.images) ? (product.images as string[]).join(', ') : '',
     sizes: Array.isArray(product?.sizes) ? (product.sizes as string[]).join(', ') : '',
     colors: Array.isArray(product?.colors) ? (product.colors as string[]).join(', ') : '',
+    fabric: (product?.fabric as string) || '',
+    work: (product?.work as string) || '',
+    pieces: (product?.pieces as number) || 1,
+    includes: Array.isArray(product?.includes) ? (product.includes as string[]).join(', ') : '',
+    care_instructions: (product?.care_instructions as string) || '',
+    is_new_arrival: Boolean(product?.is_new_arrival),
+    is_on_sale: Boolean(product?.is_on_sale),
   });
 
   const [categories, setCategories] = useState<Array<{id: string; name: string}>>([]);
+  const [subcategories, setSubcategories] = useState<Array<{id: string; name: string; category_id: string}>>([]);
   const [uploading, setUploading] = useState(false);
   const [variations, setVariations] = useState<VariationRow[]>([]);
   const [loadingVariations, setLoadingVariations] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'variations'>('details');
 
   useEffect(() => {
-    adminService.fetchCategories().then(setCategories);
+    Promise.all([adminService.fetchCategories(), adminService.fetchSubcategories()]).then(([cats, subs]) => {
+      setCategories(cats || []);
+      setSubcategories(subs || []);
+    });
 
     // Load existing variations when editing
     if (product?.id) {
@@ -54,6 +69,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
       }).finally(() => setLoadingVariations(false));
     }
   }, [product?.id]);
+
+  const visibleSubcategories = subcategories.filter(s => s.category_id === formData.category_id);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -91,8 +108,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
     try {
       const payload = {
         ...formData,
+        slug: formData.slug || formData.title.toLowerCase().replace(/\s+/g, '-'),
+        images: formData.images.split(',').map((img: string) => img.trim()).filter(Boolean),
         sizes: formData.sizes.split(',').map((s: string) => s.trim()).filter(Boolean),
         colors: formData.colors.split(',').map((c: string) => c.trim()).filter(Boolean),
+        includes: formData.includes.split(',').map((i: string) => i.trim()).filter(Boolean),
       };
 
       let productId = product?.id as string | undefined;
@@ -156,6 +176,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
                     placeholder="Ex: JT Premium 3-Piece Luxury Set" />
                 </div>
 
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Slug</label>
+                  <input type="text" value={formData.slug} onChange={e => setFormData(p => ({ ...p, slug: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold"
+                    placeholder="embroidered-lawn-shalwar-kameez" />
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Category *</label>
                   <select required value={formData.category_id} onChange={e => setFormData(p => ({ ...p, category_id: e.target.value }))}
@@ -172,6 +199,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
                 </div>
 
                 <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Subcategory</label>
+                  <select value={formData.subcategory_id} onChange={e => setFormData(p => ({ ...p, subcategory_id: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold">
+                    <option value="">Select Subcategory</option>
+                    {visibleSubcategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Base Price (PKR) *</label>
                   <input required type="number" min="0" value={formData.price} onChange={e => setFormData(p => ({ ...p, price: Number(e.target.value) }))}
                     className="w-full bg-slate-100 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold text-primary" />
@@ -182,6 +218,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
                   <input type="number" min="0" value={formData.old_price} onChange={e => setFormData(p => ({ ...p, old_price: Number(e.target.value) }))}
                     className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold text-slate-400"
                     placeholder="For showing strikethrough discount" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Discount Price (PKR)</label>
+                  <input type="number" min="0" value={formData.discount_price} onChange={e => setFormData(p => ({ ...p, discount_price: Number(e.target.value) }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold" />
                 </div>
 
                 <div className="space-y-2">
@@ -196,6 +238,58 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
                   <input type="text" value={formData.colors} onChange={e => setFormData(p => ({ ...p, colors: e.target.value }))}
                     className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold"
                     placeholder="Black, White, Beige, Maroon" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fabric</label>
+                  <input type="text" value={formData.fabric} onChange={e => setFormData(p => ({ ...p, fabric: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold"
+                    placeholder="Lawn" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Work</label>
+                  <input type="text" value={formData.work} onChange={e => setFormData(p => ({ ...p, work: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold"
+                    placeholder="Embroidery" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pieces</label>
+                  <input type="number" min="1" value={formData.pieces} onChange={e => setFormData(p => ({ ...p, pieces: Number(e.target.value) }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold" />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Includes (comma separated)</label>
+                  <input type="text" value={formData.includes} onChange={e => setFormData(p => ({ ...p, includes: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold"
+                    placeholder="Shirt, Shalwar, Dupatta" />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Care Instructions</label>
+                  <textarea rows={2} value={formData.care_instructions} onChange={e => setFormData(p => ({ ...p, care_instructions: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all resize-none font-medium"
+                    placeholder="Hand wash only. Do not bleach." />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Gallery Images (comma separated URLs)</label>
+                  <textarea rows={2} value={formData.images} onChange={e => setFormData(p => ({ ...p, images: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all resize-none font-medium"
+                    placeholder="https://...img1.jpg, https://...img2.jpg" />
+                </div>
+
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <label className="flex items-center gap-2 p-3 border border-slate-100 rounded-xl bg-slate-50 text-sm font-bold text-slate-700">
+                    <input type="checkbox" checked={formData.is_new_arrival} onChange={e => setFormData(p => ({ ...p, is_new_arrival: e.target.checked }))} />
+                    Mark as New Arrival
+                  </label>
+                  <label className="flex items-center gap-2 p-3 border border-slate-100 rounded-xl bg-slate-50 text-sm font-bold text-slate-700">
+                    <input type="checkbox" checked={formData.is_on_sale} onChange={e => setFormData(p => ({ ...p, is_on_sale: e.target.checked }))} />
+                    Mark as On Sale
+                  </label>
                 </div>
               </div>
 

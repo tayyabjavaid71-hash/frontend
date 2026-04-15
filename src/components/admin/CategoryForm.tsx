@@ -12,6 +12,7 @@ interface CategoryFormProps {
 export const CategoryForm: React.FC<CategoryFormProps> = ({ category, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: category?.name || '',
+    slug: category?.slug || '',
     description: category?.description || '',
     image_url: category?.image_url || '',
   });
@@ -90,6 +91,17 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ category, onClose, o
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-accent transition-all resize-none"
               placeholder="What defines this category?"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-700">Slug (SEO)</label>
+            <input
+              type="text"
+              value={formData.slug}
+              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-accent transition-all"
+              placeholder="Ex: clothing"
             />
           </div>
 

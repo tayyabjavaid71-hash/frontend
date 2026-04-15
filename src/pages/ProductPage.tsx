@@ -63,6 +63,12 @@ export const ProductPage: React.FC = () => {
     );
   }
 
+  const galleryImages = [
+    ...(Array.isArray(product.images) ? product.images : []),
+    ...(Array.isArray(product.product_images) ? product.product_images.map((img: any) => img.image_url) : []),
+    product.image_url,
+  ].filter(Boolean);
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
@@ -81,7 +87,7 @@ export const ProductPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
                 {/* Left: Gallery (Occupies 7/12 on large screens) */}
                 <div className="lg:col-span-7">
-                    <ProductGallery images={[product.image_url, product.image_url, product.image_url].filter(Boolean)} />
+                  <ProductGallery images={galleryImages.length ? galleryImages : [product.image_url].filter(Boolean)} />
                 </div>
 
                 {/* Right: Info (Occupies 5/12 on large screens) */}
@@ -101,7 +107,15 @@ export const ProductPage: React.FC = () => {
                 </div>
             </div>
 
-            <ProductTabs description={product.description} />
+            <ProductTabs
+              description={product.description}
+              fabric={product.fabric}
+              careInstructions={product.care_instructions}
+              includes={product.includes}
+              pieces={product.pieces}
+              work={product.work}
+              color={Array.isArray(product.colors) ? product.colors.join(', ') : product.color}
+            />
         </motion.div>
 
         {/* RELATED PRODUCTS */}
