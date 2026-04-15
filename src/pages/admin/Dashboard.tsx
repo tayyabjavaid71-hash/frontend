@@ -1,25 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Package, Users, DollarSign, TrendingUp, ArrowUpRight, Clock } from 'lucide-react';
-import { adminService } from '../../services/adminService';
+import { API } from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
 
 export const Dashboard: React.FC = () => {
+  const { user, profile } = useAuth();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await adminService.getAnalytics();
-        setStats(data);
+        const userHeader = user
+          ? { id: user.id, role: profile?.role || 'admin', email: user.email }
+          : { id: '1', role: 'admin' };
+
+        const { data } = await API.get('/admin/analytics', {
+          headers: { user: JSON.stringify(userHeader) },
+        });
+
+        setStats(data.analytics);
       } catch (error) {
-        console.error(error);
+        console.error('Dashboard stats error:', error);
+        // Fallback: zero-state so UI doesn't crash
+        setStats({ totalRevenue: '0.00', totalOrders: 0, totalProducts: 0, totalUsers: 0 });
       } finally {
         setLoading(false);
       }
     };
     fetchStats();
-  }, []);
+  }, [user, profile]);
 
   if (loading) {
     return (

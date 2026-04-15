@@ -1,45 +1,45 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { HomePage } from '../pages/HomePage';
-import { ProductsPage } from '../pages/ProductsPage';
-import { CartPage } from '../pages/CartPage';
-import { Wishlist } from '../pages/Wishlist';
-import { ProductPage } from '../pages/ProductPage';
-import { CheckoutPage } from '../pages/CheckoutPage';
-import { SuccessPage } from '../pages/SuccessPage';
 import { Login } from '../pages/Login';
-import { Register } from '../pages/Register';
-
-// Admin Imports
-import { AdminLayout } from '../pages/admin/AdminLayout';
+import { AdminOrders } from '../pages/admin/Orders';
 import { Dashboard } from '../pages/admin/Dashboard';
 import { AdminProducts } from '../pages/admin/Products';
-import { AdminCategories } from '../pages/admin/Categories';
-import { AdminOrders } from '../pages/admin/Orders';
 import { AdminUsers } from '../pages/admin/Users';
+import { AdminCategories } from '../pages/admin/Categories';
+import { AdminLayout } from '../pages/admin/AdminLayout';
+import { HomePage } from '../pages/HomePage';
+import { ProductsPage } from '../pages/ProductsPage';
+import { ProductPage } from '../pages/ProductPage';
+import { CartPage } from '../pages/CartPage';
+import { CheckoutPage } from '../pages/CheckoutPage';
+import { Register } from '../pages/Register';
+import { Wishlist } from '../pages/Wishlist';
+import { SuccessPage } from '../pages/SuccessPage';
 
-export const AppRoutes: React.FC = () => {
+const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Public Pages */}
+      {/* Customer Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/shop" element={<ProductsPage />} />
-      <Route path="/products" element={<ProductsPage />} />
-      <Route path="/cart" element={<CartPage />} />
-      <Route path="/wishlist" element={<Wishlist />} />
       <Route path="/product/:id" element={<ProductPage />} />
+      <Route path="/cart" element={<CartPage />} />
       <Route path="/checkout" element={<CheckoutPage />} />
+      <Route path="/wishlist" element={<Wishlist />} />
       <Route path="/success" element={<SuccessPage />} />
+      
+      {/* Auth Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       
-      {/* Admin Panel */}
+      {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="categories" element={<AdminCategories />} />
-        <Route path="products" element={<AdminProducts />} />
+        <Route index element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="orders" element={<AdminOrders />} />
+        <Route path="products" element={<AdminProducts />} />
         <Route path="users" element={<AdminUsers />} />
+        <Route path="categories" element={<AdminCategories />} />
       </Route>
 
       {/* Fallback */}
@@ -47,3 +47,5 @@ export const AppRoutes: React.FC = () => {
     </Routes>
   );
 };
+
+export default AppRoutes;

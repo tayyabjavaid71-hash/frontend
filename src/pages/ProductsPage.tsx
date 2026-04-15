@@ -29,7 +29,7 @@ export const ProductsPage: React.FC = () => {
   }, [location.search]);
 
   useEffect(() => {
-    fetchProducts(debouncedSearch, category, minPrice, maxPrice);
+    fetchProducts(debouncedSearch, category, minPrice, maxPrice, true);
   }, [debouncedSearch, category, minPrice, maxPrice]);
 
   return (
@@ -42,9 +42,9 @@ export const ProductsPage: React.FC = () => {
         <div className="mb-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
             <div className="max-w-xl">
-              <span className="text-primary font-black uppercase tracking-[0.3em] text-[10px] mb-4 block">Boutique Gallery</span>
-              <h1 className="text-6xl font-black text-slate-800 tracking-tighter mb-4">Curated Selection</h1>
-              <p className="text-slate-400 font-medium text-lg">Explore our finest artisanal pieces, crafted for the modern luxury aesthetic.</p>
+              <span className="text-primary font-black uppercase tracking-[0.3em] text-[10px] mb-4 block">Women's Collection</span>
+              <h1 className="text-6xl font-black text-slate-800 tracking-tighter mb-4">Women's Fashion</h1>
+              <p className="text-slate-400 font-medium text-lg">Explore our exclusive women's collection — kurtis, abayas, unstitched & more.</p>
             </div>
             
             <div className="relative w-full md:max-w-md group">

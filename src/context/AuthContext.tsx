@@ -1,84 +1,119 @@
-import React, { createContext, useEffect, useState } from 'react';
-import type { User, Session } from '@supabase/supabase-js';
+import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
-interface AuthContextProps {
-  user: User | null;
-  profile: any | null;
-  session: Session | null;
-  isLoading: boolean;
-  signOut: () => Promise<void>;
-}
+type AuthProfile = {
+  id: string;
+  email?: string;
+  role?: 'admin' | 'customer' | 'user';
+  full_name?: string;
+  name?: string;
+};
 
-export const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+type AuthContextValue = {
+  user: any;
+  profile: AuthProfile | null;
+  isLoading: boolean;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
+  setProfile: React.Dispatch<React.SetStateAction<AuthProfile | null>>;
+  signOut: () => Promise<void>;
+};
+
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<AuthProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      
-      if (error) throw error;
-      setProfile(data);
-    } catch (err) {
-      console.error('Error fetching profile:', err);
-      setProfile(null);
+  const loadUserProfile = useCallback(async (userId: string) => {
+    const { data: fromUsers } = await supabase
+      .from('users')
+      .select('id, email, role, name')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (fromUsers) {
+      setProfile({
+        id: fromUsers.id,
+        email: fromUsers.email,
+        role: fromUsers.role,
+        name: fromUsers.name,
+      });
+      return;
     }
-  };
 
-  useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setIsLoading(false);
-      }
-    });
+    const { data: fromProfiles } = await supabase
+      .from('profiles')
+      .select('id, email, role, full_name')
+      .eq('id', userId)
+      .maybeSingle();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-        setIsLoading(false);
-      }
-    });
+    if (fromProfiles) {
+      setProfile({
+        id: fromProfiles.id,
+        email: fromProfiles.email,
+        role: fromProfiles.role,
+        full_name: fromProfiles.full_name,
+      });
+      return;
+    }
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    setProfile(null);
   }, []);
 
   useEffect(() => {
-    if (user && profile) {
-      setIsLoading(false);
-    } else if (!user) {
-      setIsLoading(false);
-    }
-  }, [user, profile]);
+    let mounted = true;
 
-  const signOut = async () => {
+    const bootstrapAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const sessionUser = data.session?.user ?? null;
+        if (!mounted) return;
+        setUser(sessionUser);
+        if (sessionUser?.id) {
+          await loadUserProfile(sessionUser.id);
+        } else {
+          setProfile(null);
+        }
+      } catch {
+        // Offline or network error — continue without a session
+        if (!mounted) return;
+        setUser(null);
+        setProfile(null);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+
+    bootstrapAuth();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const nextUser = session?.user ?? null;
+      setUser(nextUser);
+      if (nextUser?.id) {
+        await loadUserProfile(nextUser.id);
+      } else {
+        setProfile(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [loadUserProfile]);
+
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
+    setUser(null);
     setProfile(null);
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, profile, session, isLoading, signOut }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ user, profile, isLoading, setUser, setProfile, signOut }),
+    [user, profile, isLoading, signOut]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

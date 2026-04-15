@@ -1,237 +1,276 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldCheck, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { AlertCircle, Check, Loader2, ShoppingBag, Home, CreditCard, Truck, Lock } from 'lucide-react';
+import { Navbar } from '../components/layout/Navbar';
+import { Footer } from '../components/layout/Footer';
 import { useCart } from '../hooks/useCart';
-import { supabase } from '../services/supabaseClient';
-import { orderService } from '../services/orderService';
-import { CheckoutForm } from '../components/checkout/CheckoutForm';
+import { AuthContext } from '../context/AuthContext';
+import { orderApi } from '../api/orderApi';
+
+interface FormData {
+  fullName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  paymentMethod: 'COD' | 'CARD';
+}
 
 export const CheckoutPage: React.FC = () => {
-  const { cart, cartTotal, setIsCartOpen, clearCart } = useCart();
   const navigate = useNavigate();
+  const { cart, cartTotal } = useCart();
+  const { user } = useContext(AuthContext)!;
   const [loading, setLoading] = useState(false);
-  
-  const [formData, setFormData] = useState({
-    name: '',
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData>({
+    fullName: '',
+    email: '',
     phone: '',
     address: '',
     city: '',
+    postalCode: '',
+    paymentMethod: 'COD',
   });
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'ONLINE'>('COD');
 
-  useEffect(() => {
-    setIsCartOpen(false);
-  }, [setIsCartOpen]);
+  const shipping = cartTotal > 500 ? 0 : 50;
+  const total = cartTotal + shipping;
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center">
-        <h1 className="text-4xl font-black text-slate-800 mb-4">Cart is Empty</h1>
-        <p className="text-slate-500 mb-8 max-w-sm">Add some luxury pieces to your collection before checking out.</p>
-        <Link to="/shop" className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-black transition-all">Explore Boutique</Link>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-32 h-32 bg-slate-50 rounded-full flex items-center justify-center mb-8">
+            <ShoppingBag size={48} className="text-slate-200" />
+          </div>
+          <h1 className="text-4xl font-black text-slate-800 mb-4">Cart is Empty</h1>
+          <p className="text-slate-500 mb-10 max-w-sm">Add items to your cart before proceeding to checkout.</p>
+          <Link to="/shop" className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-black transition-all">
+            Continue Shopping
+          </Link>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  const shipping = cartTotal > 500 ? 0 : 50;
-  const finalTotal = cartTotal + shipping;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-  const handleCheckout = async (e: React.FormEvent) => {
+  const validateForm = () => {
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.address || !formData.city) {
+      setError('Please fill in all required fields');
+      return false;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+    if (!/^\d{10,}$/.test(formData.phone.replace(/\D/g, ''))) {
+      setError('Please enter a valid phone number');
+      return false;
+    }
+    return true;
+  };
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate form data
-    if (!formData.name || !formData.phone || !formData.address || !formData.city) {
-      alert('Please fill in all shipping details');
-      return;
-    }
+    if (!validateForm()) return;
 
-    if (cart.length === 0) {
-      alert('Your cart is empty');
-      return;
-    }
-    
     setLoading(true);
-    
+    setError(null);
+
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Format cart items for order
-      const orderItems = cart.map(item => ({
-        id: item.id,
-        quantity: item.quantity,
-        price: item.price,
-        selectedSize: item.selectedSize,
-        selectedColor: item.selectedColor,
-        variationId: item.variationId,
-      }));
+      const currentUser = user || { id: String(Date.now()), role: 'customer', name: formData.fullName };
+      const response = await orderApi.create(
+        {
+          userId: currentUser.id,
+          customer_name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          postal_code: formData.postalCode,
+          total_amount: total,
+          payment_method: formData.paymentMethod,
+          status: 'pending',
+          items: cart.map(item => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            price: item.price,
+            size: item.selectedSize,
+            color: item.selectedColor,
+          })),
+        },
+        currentUser
+      );
 
-      const orderPayload = {
-        user_id: session?.user?.id || null,
-        customer_name: formData.name,
-        phone: formData.phone,
-        address: formData.address,
-        city: formData.city,
-        total_amount: finalTotal,
-        payment_method: paymentMethod,
-        status: paymentMethod === 'ONLINE' ? 'pending_payment' : 'pending'
-      };
-
-      const newOrder = await orderService.placeOrder(orderPayload, orderItems);
-
-      if (paymentMethod === 'ONLINE') {
-        // Trigger Pakistan PG Simulation (JazzCash/EasyPaisa)
-        // Normally you redirect to the payment gateway URL here.
-        setTimeout(() => {
-          setLoading(false);
-          alert(`Redirecting to JazzCash/EasyPaisa gateway for Order JTC-${newOrder.id}...`);
-          clearCart();
-          navigate(`/success?orderId=${newOrder.id}`);
-        }, 2000);
+      const orderId = response.data?.id || response.data?.order?.id;
+      if (orderId) {
+        navigate(`/success?orderId=${orderId}`);
       } else {
-        await clearCart();
-        setTimeout(() => {
-          setLoading(false);
-          navigate(`/success?orderId=${newOrder.id}`);
-        }, 1500);
+        throw new Error('Failed to create order');
       }
-
-    } catch (err) {
-      console.error('Checkout error:', err);
-      const error = err instanceof Error ? err.message : 'Failed to place order';
-      alert(`Error: ${error}. Please check your connection and try again.`);
+    } catch (err: any) {
+      console.error('Error placing order:', err);
+      setError(err.response?.data?.message || 'Failed to place order. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white py-12">
-      <div className="max-w-[1440px] mx-auto px-6">
-        
-        <div className="mb-12 flex items-center justify-between">
-          <Link to="/shop" className="inline-flex items-center gap-3 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-primary transition-all group">
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Boutique
-          </Link>
-          <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest">
-            <ShieldCheck size={16} /> Secure COD Checkout
-          </div>
-        </div>
+    <div className="min-h-screen flex flex-col bg-white">
+      <Navbar />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
-          
-          <div className="lg:col-span-7">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-12"
-            >
-              <div>
-                <span className="text-primary font-black tracking-widest uppercase text-xs block mb-3">Confirmation</span>
-                <h2 className="text-5xl font-black text-slate-800 tracking-tight mb-8">Shipping Boutique</h2>
-                
-                <div className="mb-12">
-                  <h3 className="text-xl font-black text-slate-800 mb-6 uppercase text-xs tracking-widest border-b border-slate-100 pb-4">Payment Method</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button 
-                      onClick={() => setPaymentMethod('COD')}
-                      className={`p-6 border-2 rounded-2xl flex flex-col gap-2 items-start transition-all ${
-                        paymentMethod === 'COD' ? 'border-primary bg-primary/5 shadow-sm' : 'border-slate-100 bg-white hover:border-slate-200'
-                      }`}
-                    >
-                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-black">C</div>
-                      <span className="font-black text-slate-800 tracking-tight">Cash on Delivery</span>
-                      <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Pay at your doorstep</span>
-                    </button>
-                    <button 
-                      onClick={() => setPaymentMethod('ONLINE')}
-                      className={`p-6 border-2 rounded-2xl flex flex-col gap-2 items-start transition-all ${
-                        paymentMethod === 'ONLINE' ? 'border-primary bg-primary/5 shadow-sm' : 'border-slate-100 bg-white hover:border-slate-200'
-                      }`}
-                    >
-                      <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black">J</div>
-                      <span className="font-black text-slate-800 tracking-tight">JazzCash / Cards</span>
-                      <span className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Instant & Secure</span>
-                    </button>
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-16 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+          {/* Left: Form (2/3) */}
+          <div className="lg:col-span-2">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="mb-12">
+                <span className="text-primary font-black uppercase tracking-widest text-[10px] mb-3 block">Secure Checkout</span>
+                <h1 className="text-5xl font-black text-slate-800 tracking-tight">Complete Your Order</h1>
+              </div>
+
+              <form onSubmit={handlePlaceOrder} className="space-y-8">
+                {/* Error Message */}
+                {error && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-start gap-4 p-4 bg-red-50 border border-red-200 rounded-2xl">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-red-700 font-semibold">{error}</p>
+                  </motion.div>
+                )}
+
+                {/* Shipping Information Section */}
+                <div className="border-t pt-8">
+                  <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
+                    <Home size={20} /> SHIPPING INFORMATION
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <input type="text" name="fullName" placeholder="Full Name *" value={formData.fullName} onChange={handleInputChange} className="px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-semibold text-slate-800" />
+                    <input type="email" name="email" placeholder="Email Address *" value={formData.email} onChange={handleInputChange} className="px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-semibold text-slate-800" />
+                    <input type="tel" name="phone" placeholder="Phone Number *" value={formData.phone} onChange={handleInputChange} className="px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-semibold text-slate-800" />
+                    <input type="text" name="city" placeholder="City *" value={formData.city} onChange={handleInputChange} className="px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-semibold text-slate-800" />
+                  </div>
+
+                  <input type="text" name="address" placeholder="Street Address *" value={formData.address} onChange={handleInputChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-semibold text-slate-800 mt-6" />
+                  <input type="text" name="postalCode" placeholder="Postal Code" value={formData.postalCode} onChange={handleInputChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-semibold text-slate-800 mt-6" />
+                </div>
+
+                {/* Payment Method Section */}
+                <div className="border-t pt-8">
+                  <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
+                    <CreditCard size={20} /> PAYMENT METHOD
+                  </h2>
+
+                  <div className="space-y-4">
+                    <label className="flex items-center p-5 border-2 border-slate-200 rounded-2xl cursor-pointer hover:border-primary transition-all" onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'COD' }))}>
+                      <input type="radio" name="paymentMethod" value="COD" checked={formData.paymentMethod === 'COD'} onChange={handleInputChange} className="w-5 h-5 accent-primary" />
+                      <span className="ml-4 font-bold text-slate-800">Cash on Delivery (COD)</span>
+                      <span className="ml-auto text-xs text-slate-500 font-semibold">Pay when item arrives</span>
+                    </label>
+
+                    <label className="flex items-center p-5 border-2 border-slate-200 rounded-2xl cursor-pointer hover:border-primary transition-all opacity-50 cursor-not-allowed" onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'CARD' }))}>
+                      <input type="radio" name="paymentMethod" value="CARD" disabled className="w-5 h-5 accent-primary" />
+                      <span className="ml-4 font-bold text-slate-800">Credit/Debit Card</span>
+                      <span className="ml-auto text-xs text-slate-500 font-semibold">Coming Soon</span>
+                    </label>
                   </div>
                 </div>
 
-                <CheckoutForm 
-                  formData={formData} 
-                  setFormData={setFormData} 
-                  onSubmit={handleCheckout} 
-                  loading={loading}
-                />
-              </div>
+                {/* Order Review Section */}
+                <div className="border-t pt-8">
+                  <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
+                    <ShoppingBag size={20} /> ORDER ITEMS ({cart.length})
+                  </h2>
+
+                  <div className="space-y-4 max-h-64 overflow-y-auto">
+                    {cart.map((item) => (
+                      <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div className="flex items-center gap-4">
+                          <img src={item.image_url} alt={item.title} className="w-16 h-16 object-cover rounded-lg" />
+                          <div>
+                            <p className="font-bold text-slate-800">{item.title}</p>
+                            <p className="text-xs text-slate-500">{item.selectedSize} / {item.selectedColor}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-slate-800">x{item.quantity}</p>
+                          <p className="text-primary font-black">${(item.price * item.quantity).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <motion.button type="submit" disabled={loading} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-3 hover:bg-black transition-all disabled:opacity-50">
+                  {loading ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" /> Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Lock size={20} /> Place Order Securely
+                    </>
+                  )}
+                </motion.button>
+              </form>
             </motion.div>
           </div>
 
-          <div className="lg:col-span-5">
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-slate-50 p-10 rounded-[3.5rem] sticky top-24 border border-slate-100"
-            >
-              <h2 className="text-xl font-black text-slate-800 tracking-tight mb-8 uppercase text-xs tracking-[0.2em] border-b border-slate-200 pb-6">Your Selection</h2>
-              
-              <div className="space-y-6 mb-10 max-h-[40vh] overflow-y-auto no-scrollbar">
-                {cart.map(item => {
-                  const itemKey = `${item.id}-${item.selectedSize || 'no-size'}-${item.selectedColor || 'no-color'}`;
-                  return (
-                    <div key={itemKey} className="flex gap-6 items-center">
-                      <div className="w-20 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-white shadow-sm border border-slate-100">
-                          <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-black text-slate-800 text-sm line-clamp-1">{item.title}</h4>
-                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">
-                          {item.selectedSize || 'Standard'} / {item.selectedColor || 'Default'}
-                        </p>
-                        <div className="flex justify-between items-end mt-2">
-                          <span className="text-slate-400 text-xs font-bold">Qty: {item.quantity}</span>
-                          <span className="font-black text-slate-800 text-sm">${(item.price * item.quantity).toFixed(2)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+          {/* Right: Order Summary (1/3) */}
+          <div className="lg:col-span-1">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="sticky top-32 bg-slate-50 p-8 rounded-3xl border border-slate-200">
+              <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-8 pb-6 border-b border-slate-200">Order Summary</h2>
 
-              <div className="space-y-4 pt-8 border-t border-slate-200">
-                <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-slate-400">
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between text-sm text-slate-600">
                   <span>Subtotal</span>
-                  <span className="text-slate-800">${cartTotal.toFixed(2)}</span>
+                  <span className="font-bold text-slate-800">${cartTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-slate-400">
-                  <span>Shipping</span>
-                  <span className="text-slate-800">{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span className="flex items-center gap-2">
+                    <Truck size={14} /> Shipping
+                  </span>
+                  <span className="font-bold text-slate-800">{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
                 </div>
-                
-                <div className="flex justify-between items-end pt-8 mt-8 border-t border-slate-800">
-                    <span className="text-lg font-black text-slate-800 uppercase tracking-tighter">Total Amount</span>
-                    <span className="text-4xl font-black text-primary tracking-tighter">${finalTotal.toFixed(2)}</span>
-                </div>
-
-                <button 
-                  form="cod-form"
-                  type="submit" 
-                  disabled={loading}
-                  className={`w-full text-white py-6 rounded-3xl font-black uppercase text-xs tracking-[0.2em] transition-all flex items-center justify-center gap-3 shadow-2xl hover:scale-[1.02] active:scale-[0.98] mt-10 group disabled:opacity-50 ${
-                    paymentMethod === 'ONLINE' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20' : 'bg-slate-900 hover:bg-black shadow-slate-200'
-                  }`}
-                >
-                  {loading ? (
-                    <Loader2 className="animate-spin" size={20} />
-                  ) : (
-                    <>
-                      {paymentMethod === 'ONLINE' ? 'Pay via JazzCash / PG' : 'Confirm COD Order'} <ArrowRight className="group-hover:translate-x-1 transition-transform" size={16} />
-                    </>
-                  )}
-                </button>
+                {shipping > 0 && (
+                  <p className="text-xs text-slate-400 italic">Free shipping on orders over $500</p>
+                )}
               </div>
+
+              <div className="pt-8 border-t border-slate-200 mb-8">
+                <div className="flex justify-between items-end">
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-800">Total</span>
+                  <span className="text-4xl font-black text-primary tracking-tighter">${total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-8 p-4 bg-green-50 rounded-2xl border border-green-100">
+                <div className="flex items-center gap-2 text-xs text-green-700 font-bold">
+                  <Check size={16} /> Secure checkout
+                </div>
+                <div className="flex items-center gap-2 text-xs text-green-700 font-bold">
+                  <Check size={16} /> Safe payment
+                </div>
+              </div>
+
+              <Link to="/cart" className="w-full bg-white border border-slate-200 text-slate-800 py-3 rounded-2xl font-bold uppercase text-xs text-center hover:bg-slate-50 transition-all">
+                Edit Cart
+              </Link>
             </motion.div>
           </div>
         </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 };

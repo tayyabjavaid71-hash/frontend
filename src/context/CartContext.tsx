@@ -39,6 +39,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchCart = useCallback(async () => {
     try {
       setError(null);
+      // Skip Supabase entirely when offline — fall back to localStorage cart
+      if (!navigator.onLine) return;
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
       if (!user) return;
@@ -68,7 +70,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } as CartItem));
         setCart(items);
       }
-    } catch (err) {
+    } catch (err: any) {
+      // Silently swallow lock-contention / network errors so the
+      // localStorage cart keeps working offline
+      const isLockOrNetworkError =
+        err?.name === 'AbortError' ||
+        err?.name === 'NavigatorLockAcquireTimeoutError' ||
+        err?.message?.includes('Lock') ||
+        err?.message?.includes('Failed to fetch') ||
+        err?.message?.includes('ERR_INTERNET_DISCONNECTED');
+      if (isLockOrNetworkError) return;
       console.error('Error in fetchCart:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
     }
