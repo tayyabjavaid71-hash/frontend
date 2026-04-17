@@ -20,7 +20,7 @@ interface FormData {
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, cartTotal } = useCart();
+  const { cart, cartTotal, clearCart } = useCart();
   const { user } = useContext(AuthContext)!;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,32 +85,29 @@ export const CheckoutPage: React.FC = () => {
     setError(null);
 
     try {
-      const currentUser = user || { id: String(Date.now()), role: 'customer', name: formData.fullName };
-      const response = await orderApi.create(
-        {
-          userId: currentUser.id,
-          customer_name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          postal_code: formData.postalCode,
-          total_amount: total,
-          payment_method: formData.paymentMethod,
-          status: 'pending',
-          items: cart.map(item => ({
-            product_id: item.id,
-            quantity: item.quantity,
-            price: item.price,
-            size: item.selectedSize,
-            color: item.selectedColor,
-          })),
-        },
-        currentUser
-      );
+      const response = await orderApi.create({
+        userId: user?.id,           // undefined for guests → backend sets null
+        customer_name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        postal_code: formData.postalCode,
+        total_amount: total,
+        payment_method: formData.paymentMethod,
+        status: 'pending',
+        items: cart.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price,
+          size: item.selectedSize,
+          color: item.selectedColor,
+        })),
+      });
 
       const orderId = response.data?.id || response.data?.order?.id;
       if (orderId) {
+        await clearCart();
         navigate(`/success?orderId=${orderId}`);
       } else {
         throw new Error('Failed to create order');

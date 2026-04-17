@@ -11,30 +11,58 @@ export const Register: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
-      const { error: signUpError } = await supabase.auth.signUp({ 
-        email, 
-        password, 
-        options: { 
-          data: { 
-            full_name: name 
-          } 
-        }
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters.');
+        setLoading(false);
+        return;
+      }
+
+      // 1. Create Supabase auth user
+      const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+
+      // data.user is always set on success (even when email confirmation is required)
+      // data.session is null when email confirmation is required
+      const userId = data.user?.id;
+      if (!userId) {
+        setError('Signup failed — please try again.');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Save profile row in DB (only profiles table — users table has password_hash NOT NULL)
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: userId, email, name, role: 'customer' }),
       });
 
-      if (signUpError) throw signUpError;
-      
-      // Navigate to login after successful registration
-      navigate('/login');
+      // If no session, Supabase requires email confirmation
+      if (!data.session) {
+        setError(null);
+        setSuccess(true);
+        // Show confirmation message instead of redirecting to login
+        setTimeout(() => navigate('/login'), 3000);
+        return;
+      }
+
+      setSuccess(true);
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {
-      console.error("Registration error:", err);
-      setError(err.message || "Failed to create account. Please try again.");
+      const msg = err?.response?.data?.message || err?.message || 'Failed to create account.';
+      setError(msg);
       setLoading(false);
     }
   };
@@ -65,6 +93,15 @@ export const Register: React.FC = () => {
                 className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-medium"
               >
                 {error}
+              </motion.div>
+            )}
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-green-50 border border-green-100 text-green-700 px-4 py-3 rounded-xl text-sm font-medium"
+              >
+                Account created! Check your email to confirm, then login…
               </motion.div>
             )}
              <div>

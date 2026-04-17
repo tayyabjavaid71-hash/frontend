@@ -21,21 +21,19 @@ export type CreateOrderPayload = {
 };
 
 export const orderApi = {
-  create(payload: CreateOrderPayload, userHeader: unknown) {
-    return API.post('/orders/create', payload, {
-      headers: { user: JSON.stringify(userHeader) },
-    });
+  create(payload: CreateOrderPayload) {
+    return API.post('/orders/create', payload);
   },
 
-  getMine(userHeader: unknown) {
-    return API.get('/orders/user/me', {
-      headers: { user: JSON.stringify(userHeader) },
-    });
+  getById(orderId: string) {
+    return API.get(`/orders/${orderId}`);
   },
 
-  getByUserId(userId: string, userHeader: unknown) {
-    return API.get(`/orders/user/${userId}`, {
-      headers: { user: JSON.stringify(userHeader) },
-    });
+  getMine() {
+    return API.get('/orders/user/me');
+  },
+
+  getByUserId(userId: string) {
+    return API.get(`/orders/user/${userId}`);
   },
 };

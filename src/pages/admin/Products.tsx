@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../services/supabaseClient';
+import { adminService } from '../../services/adminService';
 import { Plus, Edit2, Trash2, Search, AlertCircle, Loader2, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ProductForm } from '../../components/admin/ProductForm';
@@ -17,13 +17,8 @@ export const AdminProducts: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const { data, error: fetchError } = await supabase
-        .from('products')
-        .select('*, categories(name)')
-        .order('created_at', { ascending: false });
-      
-      if (fetchError) throw fetchError;
-      setProducts(data || []);
+      const data = await adminService.fetchProducts();
+      setProducts(data);
     } catch (err: any) {
       console.error('Error fetching products:', err);
       setError(err.message || 'Failed to load products');
@@ -35,12 +30,11 @@ export const AdminProducts: React.FC = () => {
   useEffect(() => { fetchProducts(); }, []);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this product permanently?')) return;
+    if (!window.confirm('Delete this product permanently? This cannot be undone.')) return;
     
     try {
       setDeleteLoading(id);
-      const { error: deleteError } = await supabase.from('products').delete().eq('id', id);
-      if (deleteError) throw deleteError;
+      await adminService.deleteProduct(id);
       await fetchProducts();
     } catch (err: any) {
       console.error('Error deleting product:', err);

@@ -1,5 +1,5 @@
-import React, { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { supabase } from '../services/supabaseClient';
 
@@ -10,6 +10,23 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Set to true after a successful Supabase sign-in so the effect below can navigate
+  const [awaitingProfile, setAwaitingProfile] = useState(false);
+
+  // Once Supabase sign-in succeeds, AuthContext loads the profile via onAuthStateChange.
+  // Watch for that to complete and navigate based on the real role from the database.
+  useEffect(() => {
+    if (!awaitingProfile) return;
+    if (auth?.isLoading) return; // still loading — wait
+    if (!auth?.profile) return; // profile not set yet — wait
+
+    setAwaitingProfile(false);
+    if (auth.profile.role === 'admin') {
+      navigate('/admin/dashboard', { replace: true });
+    } else {
+      navigate('/shop', { replace: true });
+    }
+  }, [awaitingProfile, auth?.isLoading, auth?.profile, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,53 +56,9 @@ export const Login: React.FC = () => {
         throw new Error(authError?.message || 'Invalid credentials');
       }
 
-      const profilePromise = supabase
-        .from('users')
-        .select('id, role, name, email')
-        .eq('id', data.user.id)
-        .maybeSingle();
-
-      const fallbackPromise = supabase
-        .from('profiles')
-        .select('id, role, full_name, email')
-        .eq('id', data.user.id)
-        .maybeSingle();
-
-      const [{ data: profile }, { data: fallbackProfile }] = await Promise.all([
-        profilePromise,
-        fallbackPromise,
-      ]);
-
-      const role = profile?.role || fallbackProfile?.role || 'customer';
-
-      auth?.setUser(data.user);
-      auth?.setProfile(
-        profile
-          ? {
-              id: profile.id,
-              role: profile.role,
-              name: profile.name,
-              email: profile.email,
-            }
-          : fallbackProfile
-          ? {
-              id: fallbackProfile.id,
-              role: fallbackProfile.role,
-              full_name: fallbackProfile.full_name,
-              email: fallbackProfile.email,
-            }
-          : {
-              id: data.user.id,
-              role: 'customer',
-              email: data.user.email,
-            }
-      );
-
-      if (role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/shop');
-      }
+      // Supabase sign-in succeeded — AuthContext.onAuthStateChange will fire,
+      // load the profile, then the useEffect above will navigate to the right page.
+      setAwaitingProfile(true);
     } catch (err: any) {
       const isOffline = err?.message?.includes('Failed to fetch') || !navigator.onLine;
       if (isOffline) {
@@ -187,6 +160,17 @@ export const Login: React.FC = () => {
           {/* Info Text */}
           <p className="text-center text-xs text-slate-500 mt-6">
             Use Demo Login when internet is unavailable
+          </p>
+
+          {/* Sign Up Link */}
+          <p className="text-center text-sm text-slate-600 mt-4">
+            Don&apos;t have an account?{' '}
+            <Link
+              to="/register"
+              className="font-bold text-pink-500 hover:text-pink-600 hover:underline transition"
+            >
+              Sign Up
+            </Link>
           </p>
         </div>
 

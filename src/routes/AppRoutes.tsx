@@ -15,6 +15,7 @@ import { CheckoutPage } from '../pages/CheckoutPage';
 import { Register } from '../pages/Register';
 import { Wishlist } from '../pages/Wishlist';
 import { SuccessPage } from '../pages/SuccessPage';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -32,9 +33,16 @@ const AppRoutes: React.FC = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       
-      {/* Admin Routes */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<Navigate to="/admin/dashboard" replace />} />
+      {/* Admin Routes — wrapped with ProtectedRoute (role=admin) */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="products" element={<AdminProducts />} />

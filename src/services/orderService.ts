@@ -234,26 +234,16 @@ export const orderService = {
   },
 
   /**
-   * Fetch a single order by ID
+   * Fetch a single order by ID — uses backend API (bypasses RLS, works for guests)
    */
   async fetchOrderById(orderId: string): Promise<Order> {
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*, order_items(*, products(id, title, image_url, price))')
-        .eq('id', orderId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching order:', error);
-        throw new Error(`Failed to fetch order: ${error.message}`);
-      }
-
-      if (!data) {
-        throw new Error('Order not found');
-      }
-
-      return data;
+      const res = await fetch(`/api/orders/${orderId}`);
+      if (!res.ok) throw new Error(`Failed to fetch order: ${res.statusText}`);
+      const json = await res.json();
+      const order = json.order ?? json;
+      if (!order?.id) throw new Error('Order not found');
+      return order as Order;
     } catch (err) {
       console.error('Error in fetchOrderById:', err);
       throw err;

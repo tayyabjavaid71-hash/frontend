@@ -58,9 +58,20 @@ export const AdminLayout: React.FC = () => {
           ))}
         </nav>
 
+        {/* Admin account card */}
+        <div className="mt-6 mb-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+          <p className="font-bold text-slate-900 text-sm truncate">
+            {profile?.username || profile?.name || user?.email?.split('@')[0] || 'Admin'}
+          </p>
+          <p className="text-xs text-slate-500 truncate mt-0.5">{profile?.email || user?.email}</p>
+          <span className="mt-2 inline-block text-[10px] font-black uppercase tracking-widest bg-pink-100 text-pink-600 px-2 py-0.5 rounded-md">
+            {profile?.role || 'admin'}
+          </span>
+        </div>
+
         <button 
           onClick={signOut}
-          className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-500 font-semibold transition-colors mt-auto"
+          className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-500 font-semibold transition-colors"
         >
           <LogOut size={20} />
           Sign Out

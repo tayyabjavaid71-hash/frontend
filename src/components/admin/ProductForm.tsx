@@ -120,8 +120,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
       if (productId) {
         await adminService.updateProduct(productId, payload);
       } else {
-        const { data } = await supabase.from('products').insert([payload]).select().single();
-        productId = data?.id;
+        const newProduct = await adminService.createProduct(payload);
+        productId = newProduct?.id;
       }
 
       // Save variations: insert new ones
