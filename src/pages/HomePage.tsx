@@ -6,6 +6,7 @@ import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { productService } from '../services/productService';
 import { ProductCard } from '../components/product/ProductCard';
+import { HeroSlider } from '../components/HeroSlider';
 
 // SRS Categories with matching images
 const SRS_CATEGORIES = [
@@ -69,44 +70,8 @@ export const HomePage: React.FC = () => {
       <Navbar />
 
       <main className="flex-1">
-        {/* ── HERO ─────────────────────────────────────────────────────── */}
-        <section className="relative h-[90vh] flex items-center overflow-hidden bg-slate-900">
-          <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=2070"
-              alt="JT Collections Luxury Fashion Hero"
-              className="w-full h-full object-cover opacity-60 scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/40 to-transparent" />
-          </div>
-
-          <div className="relative z-10 max-w-[1440px] mx-auto px-6 w-full">
-            <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, ease: 'easeOut' }} className="max-w-2xl">
-              <span className="text-primary font-black tracking-[0.4em] uppercase text-xs mb-6 block">The 2026 Collection</span>
-              <h1 className="text-white text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8">
-                Elegance <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 font-serif italic">Redefined.</span>
-              </h1>
-              <p className="text-slate-300 text-lg md:text-xl font-medium mb-12 max-w-lg leading-relaxed">
-                Unstitched · 2 Piece · 3 Piece · Kurtis · Maxi · Abaya. Curated for the Pakistani woman.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-6">
-                <Link to="/shop" className="bg-white text-slate-900 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all inline-flex items-center justify-center gap-3 shadow-2xl">
-                  Shop Collection <ArrowRight size={16} />
-                </Link>
-                <Link to="/shop?category=New Arrivals" className="border border-white/20 backdrop-blur-md text-white px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all inline-flex items-center justify-center gap-2">
-                  <Tag size={14} /> New Arrivals
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4 text-white/40 text-[10px] font-black uppercase tracking-[0.3em]">
-            <span>Scroll</span>
-            <div className="w-px h-12 bg-white/20" />
-            <span>Discover</span>
-          </div>
-        </section>
+        {/* ── HERO SLIDER ─────────────────────────────────────────────── */}
+        <HeroSlider />
 
         {/* ── TRUST BAR ────────────────────────────────────────────────── */}
         <div className="bg-slate-50 py-12 border-b border-slate-100">
