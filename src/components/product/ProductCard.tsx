@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
 import { WishlistButton } from '../wishlist/WishlistButton';
 import { useCart } from '../../hooks/useCart';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface ProductCardProps {
   id: string;
@@ -16,6 +17,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ id, title, price, image_url, category, old_price }) => {
   const { addToCart } = useCart();
+  const { formatPrice } = useCurrency();
   
   const discountPercent = old_price && old_price > price 
     ? Math.round(((old_price - price) / old_price) * 100) 
@@ -55,9 +57,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ id, title, price, imag
         <div className="flex items-end justify-between mt-2">
           <div className="flex flex-col">
             {discountPercent > 0 && (
-              <span className="text-xs text-slate-400 line-through font-bold">PKR {old_price?.toLocaleString()}</span>
+              <span className="text-xs text-slate-400 line-through font-bold">{formatPrice(old_price!)}</span>
             )}
-            <p className="text-lg font-black text-slate-900">PKR {price.toLocaleString()}</p>
+            <p className="text-lg font-black text-slate-900">{formatPrice(price)}</p>
           </div>
           <motion.button 
             whileTap={{ scale: 0.95 }}

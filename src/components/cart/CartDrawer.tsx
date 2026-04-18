@@ -4,9 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import { CartItem } from './CartItem';
+import { useCurrency } from '../../context/CurrencyContext';
 
 export const CartDrawer: React.FC = () => {
   const { isCartOpen, setIsCartOpen, cart, cartTotal } = useCart();
+  const { formatPrice } = useCurrency();
 
   return (
     <AnimatePresence>
@@ -62,7 +64,7 @@ export const CartDrawer: React.FC = () => {
               <div className="p-6 bg-slate-50 border-t border-slate-100">
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-slate-500 font-medium">Subtotal</span>
-                  <span className="text-2xl font-bold text-slate-800">${cartTotal.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-slate-800">{formatPrice(cartTotal)}</span>
                 </div>
                 <Link 
                   to="/checkout"

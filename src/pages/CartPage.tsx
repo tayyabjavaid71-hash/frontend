@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck, ShieldCheck, Package } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
+import { useCurrency } from '../context/CurrencyContext';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 
 export const CartPage: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { formatPrice } = useCurrency();
 
   const shipping = cartTotal > 500 ? 0 : 50;
   const total = cartTotal + shipping;
@@ -96,7 +98,7 @@ export const CartPage: React.FC = () => {
                       
                       <div className="text-right">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Item Total</p>
-                        <p className="text-2xl font-black text-slate-800 tracking-tighter">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="text-2xl font-black text-slate-800 tracking-tighter">{formatPrice(item.price * item.quantity)}</p>
                       </div>
                     </div>
                   </div>
@@ -113,24 +115,24 @@ export const CartPage: React.FC = () => {
               <div className="space-y-6 mb-10">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-black uppercase tracking-widest text-slate-400">Subtotal</span>
-                  <span className="font-black text-slate-800">${cartTotal.toFixed(2)}</span>
+                  <span className="font-black text-slate-800">{formatPrice(cartTotal)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black uppercase tracking-widest text-slate-400">Shipping</span>
                     <Truck size={14} className="text-primary" />
                   </div>
-                  <span className="font-black text-slate-800">{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
+                  <span className="font-black text-slate-800">{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span>
                 </div>
                 {shipping > 0 && (
-                  <p className="text-[10px] text-slate-400 font-bold italic">Free shipping on orders over $500</p>
+                  <p className="text-[10px] text-slate-400 font-bold italic">Free shipping on orders over PKR 500</p>
                 )}
               </div>
 
               <div className="pt-8 border-t border-slate-200 mb-10">
                 <div className="flex justify-between items-end">
                   <span className="text-xs font-black uppercase tracking-widest text-slate-800">Total</span>
-                  <span className="text-4xl font-black text-primary tracking-tighter">${total.toFixed(2)}</span>
+                  <span className="text-4xl font-black text-primary tracking-tighter">{formatPrice(total)}</span>
                 </div>
               </div>
 

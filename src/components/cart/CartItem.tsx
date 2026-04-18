@@ -2,9 +2,11 @@ import React from 'react';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import type { CartItem } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { useCurrency } from '../../context/CurrencyContext';
 
 export const CartItemComponent: React.FC<{ item: CartItem }> = ({ item }) => {
   const { updateQuantity, removeFromCart } = useCart();
+  const { formatPrice } = useCurrency();
 
   return (
     <div className="flex gap-4 border border-slate-100 bg-white p-3 rounded-2xl shadow-sm">
@@ -35,7 +37,7 @@ export const CartItemComponent: React.FC<{ item: CartItem }> = ({ item }) => {
           </button>
         </div>
         <div className="flex justify-between items-end">
-          <p className="font-bold text-primary">${item.price.toFixed(2)}</p>
+          <p className="font-bold text-primary">{formatPrice(item.price)}</p>
           <div className="flex items-center gap-3 bg-slate-50 rounded-lg p-1 border border-slate-100">
             <button 
               onClick={() => updateQuantity(item.id, item.selectedSize || '', item.selectedColor || '', item.cart_id, item.quantity - 1)}

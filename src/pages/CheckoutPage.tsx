@@ -202,7 +202,7 @@ export const CheckoutPage: React.FC = () => {
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-slate-800">x{item.quantity}</p>
-                          <p className="text-primary font-black">${(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="text-primary font-black">{formatPrice(item.price * item.quantity)}</p>
                         </div>
                       </div>
                     ))}

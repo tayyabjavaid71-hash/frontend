@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, ShoppingBag, ArrowRight, Package, Truck, Loader2, MapPin, Phone, Download } from 'lucide-react';
 import type { Order } from '../types';
 import { orderService } from '../services/orderService';
+import { useCurrency } from '../context/CurrencyContext';
 
 export const SuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -11,6 +12,7 @@ export const SuccessPage: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -182,7 +184,7 @@ export const SuccessPage: React.FC = () => {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="font-black text-slate-800">Qty: {item.quantity}</p>
-                    <p className="font-bold text-primary mt-1">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-bold text-primary mt-1">{formatPrice(item.price * item.quantity)}</p>
                   </div>
                 </div>
               ))}
@@ -191,7 +193,7 @@ export const SuccessPage: React.FC = () => {
             <div className="mt-8 pt-6 border-t border-slate-200">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-black text-slate-800">Total</span>
-                <span className="text-3xl font-black text-primary">${(order.total_amount || 0).toFixed(2)}</span>
+                <span className="text-3xl font-black text-primary">{order.currency || 'PKR'} {(order.total_amount || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
