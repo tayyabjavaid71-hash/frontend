@@ -100,7 +100,7 @@ export const ShippingPage: React.FC = () => {
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-2xl p-5 flex items-start gap-3">
-              <AlertCircle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
+              <AlertCircle size={18} className="text-red-500 mt-0.5 shrink-0" />
               <p className="text-red-700 text-sm">{error}</p>
             </div>
           )}
@@ -152,7 +152,7 @@ export const ShippingPage: React.FC = () => {
                   {/* Details grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div className="flex items-start gap-2">
-                      <MapPin size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                      <MapPin size={14} className="text-slate-400 mt-0.5 shrink-0" />
                       <div>
                         <p className="text-slate-500 text-xs uppercase tracking-wider font-semibold">Address</p>
                         <p className="text-slate-800 font-medium">{record.address}, {record.city}</p>
@@ -160,7 +160,7 @@ export const ShippingPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
-                      <Truck size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                      <Truck size={14} className="text-slate-400 mt-0.5 shrink-0" />
                       <div>
                         <p className="text-slate-500 text-xs uppercase tracking-wider font-semibold">Method</p>
                         <p className="text-slate-800 font-medium">{METHOD_LABEL[record.shipping_method] ?? record.shipping_method}</p>

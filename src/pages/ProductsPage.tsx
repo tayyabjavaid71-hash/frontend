@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,7 +36,7 @@ export const ProductsPage: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
       
-      <main className="flex-1 max-w-[1440px] mx-auto px-6 py-16 w-full">
+      <main className="flex-1 max-w-360 mx-auto px-6 py-16 w-full">
         
         {/* HEADER SECTION */}
         <div className="mb-20">
@@ -63,7 +63,7 @@ export const ProductsPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row gap-16 relative">
           
           {/* DESKTOP SIDEBAR */}
-          <aside className="hidden lg:block w-72 flex-shrink-0 sticky top-32 h-fit">
+          <aside className="hidden lg:block w-72 shrink-0 sticky top-32 h-fit">
             <div className="flex items-center gap-3 mb-8 text-slate-800">
                 <SlidersHorizontal size={18} />
                 <span className="font-black uppercase text-xs tracking-widest">Filter By</span>
@@ -141,7 +141,7 @@ export const ProductsPage: React.FC = () => {
                     animate={{ opacity: 1 }} 
                     exit={{ opacity: 0 }} 
                     onClick={() => setIsMobileFiltersOpen(false)}
-                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100]"
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-100"
                 />
                 <motion.div 
                     initial={{ y: '100%' }}

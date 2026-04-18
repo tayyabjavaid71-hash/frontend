@@ -67,7 +67,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, onUpdateStatus
 
   if (!orders || orders.length === 0) {
     return (
-      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-12 text-center">
+      <div className="bg-white rounded-4xl shadow-sm border border-slate-100 p-12 text-center">
         <Package size={48} className="mx-auto mb-4 text-slate-300" />
         <h3 className="text-slate-600 font-black text-lg mb-2">No Orders Yet</h3>
         <p className="text-slate-400 text-sm">Orders will appear here when customers place them.</p>
@@ -76,7 +76,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, onUpdateStatus
   }
 
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+    <div className="bg-white rounded-4xl shadow-sm border border-slate-100 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -235,7 +235,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, onUpdateStatus
                                   key={item.id}
                                   className="flex items-start gap-6 pb-4 border-b border-slate-50 last:border-0 last:pb-0"
                                 >
-                                  <div className="w-16 h-20 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
+                                  <div className="w-16 h-20 bg-slate-100 rounded-lg overflow-hidden shrink-0">
                                     <img
                                       src={item.products?.image_url || ''}
                                       alt={item.products?.title || 'Product'}
@@ -252,7 +252,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, onUpdateStatus
                                       <span>Qty: {item.quantity}</span>
                                     </div>
                                   </div>
-                                  <div className="text-right flex-shrink-0">
+                                  <div className="text-right shrink-0">
                                     <p className="font-black text-slate-800 text-sm">
                                       ${(item.price * item.quantity).toFixed(2)}
                                     </p>

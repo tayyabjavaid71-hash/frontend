@@ -115,7 +115,7 @@ export const AdminReturnsPage: React.FC = () => {
       {/* Setup Required Banner */}
       {setupRequired && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5 flex items-start gap-3">
-          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle size={18} className="text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-amber-800 text-sm">Database setup required</p>
             <p className="text-amber-700 text-xs mt-0.5">
@@ -132,7 +132,7 @@ export const AdminReturnsPage: React.FC = () => {
 
       {/* Filters */}
       <div className="flex gap-3 mb-5 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-50">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -213,7 +213,7 @@ export const AdminReturnsPage: React.FC = () => {
                           <p className="text-slate-400 text-[10px] font-mono mt-0.5">{record.user_id.slice(0, 8)}...</p>
                         )}
                       </td>
-                      <td className="px-4 py-3 max-w-[200px]">
+                      <td className="px-4 py-3 max-w-50">
                         <p className="text-slate-700 text-xs leading-relaxed line-clamp-2">{record.reason}</p>
                       </td>
                       <td className="px-4 py-3">
@@ -246,7 +246,7 @@ export const AdminReturnsPage: React.FC = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 max-w-[160px]">
+                      <td className="px-4 py-3 max-w-40">
                         {isEditing ? (
                           <input
                             className="border border-slate-200 rounded-lg px-2 py-1 text-xs w-full focus:outline-none focus:ring-1 focus:ring-amber-400"

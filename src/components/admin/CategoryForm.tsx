@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { X, Upload } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import { supabase } from '../../services/supabaseClient';
@@ -61,7 +61,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ category, onClose, o
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <h2 className="text-xl font-bold text-slate-800">{category ? 'Edit Category' : 'Add New Category'}</h2>
@@ -139,7 +139,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ category, onClose, o
             <button 
               type="submit"
               disabled={uploading}
-              className="flex-[2] py-4 px-6 rounded-2xl font-bold bg-primary text-white hover:bg-primary-light transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
+              className="flex-2 py-4 px-6 rounded-2xl font-bold bg-primary text-white hover:bg-primary-light transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
             >
               {category ? 'Update Category' : 'Save Category'}
             </button>

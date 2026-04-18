@@ -145,7 +145,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl">
         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <h2 className="text-xl font-bold text-slate-800 tracking-tight">{product ? 'Update Product' : 'Add New Product'}</h2>
@@ -376,7 +376,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
           <div className="px-8 pb-8 pt-4 flex gap-4 border-t border-slate-50">
             <button type="button" onClick={onClose} className="flex-1 py-4 px-6 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
             <button type="submit" disabled={uploading}
-              className="flex-[2] py-4 px-6 rounded-2xl font-bold bg-primary text-white hover:bg-primary-light transition-all shadow-xl shadow-primary/20 disabled:opacity-50">
+              className="flex-2 py-4 px-6 rounded-2xl font-bold bg-primary text-white hover:bg-primary-light transition-all shadow-xl shadow-primary/20 disabled:opacity-50">
               {product ? 'Update Product' : 'Save Product'}
             </button>
           </div>

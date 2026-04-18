@@ -73,11 +73,11 @@ export const HeroSlider: React.FC = () => {
           />
 
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/50 to-slate-900/10" />
+          <div className="absolute inset-0 bg-linear-to-r from-slate-900 via-slate-900/50 to-slate-900/10" />
 
           {/* Content */}
           <div className="absolute inset-0 flex items-center">
-            <div className="max-w-[1440px] mx-auto px-6 w-full">
+            <div className="max-w-360 mx-auto px-6 w-full">
               <div className="max-w-2xl">
 
                 <motion.span

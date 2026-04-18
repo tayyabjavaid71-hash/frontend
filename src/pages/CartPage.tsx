@@ -39,7 +39,7 @@ export const CartPage: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       
-      <main className="flex-1 max-w-[1440px] mx-auto px-6 py-16 w-full">
+      <main className="flex-1 max-w-360 mx-auto px-6 py-16 w-full">
         <div className="flex flex-col lg:flex-row gap-20">
           
           {/* Left: Cart Items */}
@@ -59,7 +59,7 @@ export const CartPage: React.FC = () => {
                   key={`${item.id}-${item.selectedSize}-${item.selectedColor}`}
                   className="flex flex-col sm:flex-row gap-8 pb-10 border-b border-slate-100 group"
                 >
-                  <div className="w-full sm:w-40 h-52 rounded-[2rem] overflow-hidden bg-slate-50 flex-shrink-0">
+                  <div className="w-full sm:w-40 h-52 rounded-4xl overflow-hidden bg-slate-50 shrink-0">
                     <img src={item.image_url} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                   </div>
                   
@@ -108,7 +108,7 @@ export const CartPage: React.FC = () => {
           </div>
 
           {/* Right: Summary Card */}
-          <div className="w-full lg:w-[450px]">
+          <div className="w-full lg:w-112.5">
             <div className="bg-slate-50 p-12 rounded-[3.5rem] sticky top-32 border border-slate-100">
               <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-10 border-b border-slate-200 pb-6">Summary</h2>
               

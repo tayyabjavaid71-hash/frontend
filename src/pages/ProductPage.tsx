@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -78,7 +78,7 @@ export const ProductPage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="max-w-[1440px] mx-auto px-6 py-12"
+            className="max-w-360 mx-auto px-6 py-12"
         >
             <Link to="/shop" className="inline-flex items-center gap-3 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-primary mb-12 transition-all group">
                 <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Boutique
@@ -121,7 +121,7 @@ export const ProductPage: React.FC = () => {
         {/* RELATED PRODUCTS */}
         {relatedProducts.length > 0 && (
             <section className="bg-slate-50 py-24 mt-24">
-                <div className="max-w-[1440px] mx-auto px-6">
+                <div className="max-w-360 mx-auto px-6">
                     <div className="flex justify-between items-end mb-12">
                         <div>
                             <span className="text-primary font-black tracking-widest uppercase text-xs block mb-3">You May Also Like</span>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Plus, Trash2, LayoutGrid, AlertCircle, Loader2, Layers,
   Pencil, X, Check, ChevronDown, Tag, FolderOpen, Search, Hash,
@@ -49,8 +49,8 @@ const ToastContainer: React.FC<{ toasts: Toast[]; remove: (id: number) => void }
             ${t.type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-600 text-white'}`}
         >
           {t.type === 'success'
-            ? <div className="w-5 h-5 rounded-full bg-emerald-400 flex items-center justify-center flex-shrink-0"><Check size={11} strokeWidth={3} /></div>
-            : <AlertCircle size={16} className="flex-shrink-0 text-red-200" />
+            ? <div className="w-5 h-5 rounded-full bg-emerald-400 flex items-center justify-center shrink-0"><Check size={11} strokeWidth={3} /></div>
+            : <AlertCircle size={16} className="shrink-0 text-red-200" />
           }
           <span className="flex-1">{t.msg}</span>
           <button onClick={() => remove(t.id)} className="opacity-50 hover:opacity-100 transition-opacity"><X size={13} /></button>
@@ -82,7 +82,7 @@ const ConfirmDialog: React.FC<{
   loading?: boolean;
 }> = ({ title, body, onConfirm, onCancel, loading }) => (
   <div
-    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-100 flex items-center justify-center p-4"
     onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
   >
     <motion.div
@@ -174,7 +174,7 @@ const CategoryModal: React.FC<{
         className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden"
       >
         {/* Gradient header */}
-        <div className={`px-6 py-5 ${isEdit ? 'bg-gradient-to-r from-blue-600 to-violet-600' : 'bg-gradient-to-r from-pink-600 to-rose-500'}`}>
+        <div className={`px-6 py-5 ${isEdit ? 'bg-linear-to-r from-blue-600 to-violet-600' : 'bg-linear-to-r from-pink-600 to-rose-500'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
@@ -516,7 +516,7 @@ export const AdminCategories: React.FC = () => {
               <motion.button
                 onClick={() => setCatModal({ open: true, category: null })}
                 whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-2 bg-white text-pink-700 hover:bg-pink-50 px-5 py-3 rounded-2xl font-black text-sm shadow-xl transition-colors flex-shrink-0"
+                className="flex items-center gap-2 bg-white text-pink-700 hover:bg-pink-50 px-5 py-3 rounded-2xl font-black text-sm shadow-xl transition-colors shrink-0"
               >
                 <Plus size={17} /> Add Category
               </motion.button>
@@ -581,7 +581,7 @@ export const AdminCategories: React.FC = () => {
 
               {/* Categories card */}
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
+                <div className="px-5 py-3.5 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <LayoutGrid size={14} className="text-pink-500" />
                     <h2 className="font-black text-xs uppercase tracking-widest text-slate-600">
@@ -646,7 +646,7 @@ export const AdminCategories: React.FC = () => {
                             />
 
                             {/* Avatar */}
-                            <div className={`w-11 h-11 rounded-2xl flex-shrink-0 overflow-hidden ${p.light} flex items-center justify-center`}>
+                            <div className={`w-11 h-11 rounded-2xl shrink-0 overflow-hidden ${p.light} flex items-center justify-center`}>
                               {c.image_url
                                 ? <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
                                 : <span className={`font-black text-lg ${p.text}`}>{c.name[0]?.toUpperCase()}</span>
@@ -671,7 +671,7 @@ export const AdminCategories: React.FC = () => {
 
                             {/* Hover actions */}
                             <div
-                              className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <button
@@ -696,7 +696,7 @@ export const AdminCategories: React.FC = () => {
 
                             <ChevronDown
                               size={14}
-                              className={`text-slate-300 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-0' : '-rotate-90'}`}
+                              className={`text-slate-300 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-0' : '-rotate-90'}`}
                             />
                           </div>
 
@@ -767,8 +767,8 @@ export const AdminCategories: React.FC = () => {
                 ${editingSubId ? 'border-amber-300 shadow-amber-100/50' : 'border-slate-100'}`}>
 
                 <div className={`px-5 py-4 border-b flex items-center gap-3 transition-colors duration-300
-                  ${editingSubId ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' : 'bg-gradient-to-r from-slate-50 to-white border-slate-100'}`}>
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0
+                  ${editingSubId ? 'bg-linear-to-r from-amber-50 to-orange-50 border-amber-200' : 'bg-linear-to-r from-slate-50 to-white border-slate-100'}`}>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0
                     ${editingSubId ? 'bg-amber-100' : 'bg-slate-100'}`}>
                     <Layers size={13} className={editingSubId ? 'text-amber-600' : 'text-slate-500'} />
                   </div>
@@ -784,7 +784,7 @@ export const AdminCategories: React.FC = () => {
                   {editingSubId && (
                     <button
                       onClick={resetSubForm}
-                      className="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 transition-colors flex-shrink-0"
+                      className="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 transition-colors shrink-0"
                       title="Cancel editing"
                     >
                       <X size={13} />
@@ -801,7 +801,7 @@ export const AdminCategories: React.FC = () => {
                     >
                       <div className="mx-4 mt-4 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
                         {editingCatIdx >= 0 && (
-                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${pal(editingCatIdx).dot}`} />
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${pal(editingCatIdx).dot}`} />
                         )}
                         <p className="text-xs font-semibold text-amber-800 flex-1 truncate">
                           Editing: <span className="font-black">"{editingSub.name}"</span>
@@ -897,7 +897,7 @@ export const AdminCategories: React.FC = () => {
 
               {/* Subcategory list */}
               <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center gap-2">
+                <div className="px-5 py-3.5 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white flex items-center gap-2">
                   <Tag size={13} className="text-violet-500" />
                   <h2 className="font-black text-xs uppercase tracking-widest text-slate-600">
                     All Subcategories ({subcategories.length})
@@ -924,7 +924,7 @@ export const AdminCategories: React.FC = () => {
                           className={`group flex items-center gap-3 px-4 py-3 transition-colors
                             ${isEditing ? 'bg-amber-50' : 'hover:bg-slate-50/80'}`}
                         >
-                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${p.dot}`} />
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${p.dot}`} />
                           <div className="flex-1 min-w-0">
                             <p className={`text-sm font-bold truncate ${isEditing ? 'text-amber-800' : 'text-slate-800'}`}>
                               {sub.name}
@@ -933,7 +933,7 @@ export const AdminCategories: React.FC = () => {
                               {catName}
                             </span>
                           </div>
-                          <div className={`flex gap-1 flex-shrink-0 transition-opacity ${isEditing ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                          <div className={`flex gap-1 shrink-0 transition-opacity ${isEditing ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                             <button
                               onClick={() => startEditSub(sub)}
                               className={`p-1.5 rounded-lg transition-colors

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+﻿import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertCircle, Check, Loader2, ShoppingBag, Home, CreditCard, Truck, Lock } from 'lucide-react';
@@ -141,7 +141,7 @@ export const CheckoutPage: React.FC = () => {
                 {/* Error Message */}
                 {error && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-start gap-4 p-4 bg-red-50 border border-red-200 rounded-2xl">
-                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                     <p className="text-red-700 font-semibold">{error}</p>
                   </motion.div>
                 )}

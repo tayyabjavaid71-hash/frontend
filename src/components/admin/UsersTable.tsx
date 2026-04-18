@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { User, Mail, Shield, Trash2, MoreHorizontal } from 'lucide-react';
 
 interface UsersTableProps {
@@ -7,7 +7,7 @@ interface UsersTableProps {
 
 export const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+    <div className="bg-white rounded-4xl shadow-sm border border-slate-100 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>

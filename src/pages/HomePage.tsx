@@ -75,7 +75,7 @@ export const HomePage: React.FC = () => {
 
         {/* ── TRUST BAR ────────────────────────────────────────────────── */}
         <div className="bg-slate-50 py-12 border-b border-slate-100">
-          <div className="max-w-[1440px] mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="max-w-360 mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
               { icon: <Zap size={20} />, title: 'Rapid Fulfillment', sub: 'Nationwide Express Delivery' },
               { icon: <ShieldCheck size={20} />, title: 'Hassle-Free Returns', sub: '14-Day Boutique Exchange' },
@@ -93,7 +93,7 @@ export const HomePage: React.FC = () => {
         </div>
 
         {/* ── SRS CATEGORIES GRID ───────────────────────────────────────── */}
-        <section className="py-24 max-w-[1440px] mx-auto px-6">
+        <section className="py-24 max-w-360 mx-auto px-6">
           <div className="flex justify-between items-end mb-16">
             <div>
               <span className="text-primary font-black text-[10px] uppercase tracking-[0.3em] block mb-3">Shop by Category</span>
@@ -109,7 +109,7 @@ export const HomePage: React.FC = () => {
               <Link
                 key={cat.name}
                 to={`/shop?category=${encodeURIComponent(cat.name)}`}
-                className="group relative overflow-hidden rounded-3xl aspect-[3/4] block"
+                className="group relative overflow-hidden rounded-3xl aspect-3/4 block"
               >
                 <motion.img
                   initial={{ opacity: 0, scale: 1.05 }}
@@ -119,7 +119,7 @@ export const HomePage: React.FC = () => {
                   alt={cat.name}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5">
                   <h3 className="text-white font-black text-sm tracking-tight">{cat.name}</h3>
                   <span className="text-white/60 text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-all">
@@ -132,7 +132,7 @@ export const HomePage: React.FC = () => {
         </section>
 
         {/* ── LATEST ARRIVALS ───────────────────────────────────────────── */}
-        <section className="pb-32 max-w-[1440px] mx-auto px-6">
+        <section className="pb-32 max-w-360 mx-auto px-6">
           <div className="mb-16 flex justify-between items-end">
             <div>
               <span className="text-primary font-black text-[10px] uppercase tracking-[0.3em] block mb-3">Trending Now</span>
@@ -158,7 +158,7 @@ export const HomePage: React.FC = () => {
           <img
             src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=1200&q=80"
             alt="Sale"
-            className="w-full h-[300px] object-cover opacity-30"
+            className="w-full h-75 object-cover opacity-30"
           />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
             <span className="text-primary font-black uppercase tracking-[0.5em] text-xs mb-4">Limited Time</span>
@@ -171,7 +171,7 @@ export const HomePage: React.FC = () => {
         </section>
 
         {/* ── SHOP ALL CTA ─────────────────────────────────────────────── */}
-        <section className="pb-24 max-w-[1440px] mx-auto px-6">
+        <section className="pb-24 max-w-360 mx-auto px-6">
           <div className="mb-16 flex justify-between items-end">
             <div>
               <span className="text-primary font-black text-[10px] uppercase tracking-[0.3em] block mb-3">Full Catalog</span>
@@ -192,7 +192,7 @@ export const HomePage: React.FC = () => {
         </section>
         {/* ── TESTIMONIALS ──────────────────────────────────────────────── */}
         <section className="bg-slate-50 py-24 border-t border-slate-100">
-          <div className="max-w-[1440px] mx-auto px-6 text-center">
+          <div className="max-w-360 mx-auto px-6 text-center">
             <span className="text-primary font-black uppercase tracking-[0.3em] text-[10px] mb-3 block">Real Reviews</span>
             <h2 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tighter mb-16">Loved by Women Nationwide <Star className="inline-block text-amber-400 -mt-2" fill="currentColor" /></h2>
             

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle, Calendar, CheckCircle2, ChevronDown, ChevronUp,
@@ -347,7 +347,7 @@ export const AdminOrders: React.FC = () => {
                                 {order.order_items.map(item => (
                                   <div key={item.id} className="bg-white rounded-xl p-3 flex items-center gap-3 border border-slate-100">
                                     {item.products?.image_url && (
-                                      <img src={item.products.image_url} alt="" className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
+                                      <img src={item.products.image_url} alt="" className="w-12 h-12 object-cover rounded-lg shrink-0" />
                                     )}
                                     <div className="flex-1 min-w-0">
                                       <p className="font-semibold text-slate-900 text-sm truncate">{item.products?.title || 'Product'}</p>
@@ -355,7 +355,7 @@ export const AdminOrders: React.FC = () => {
                                         {[item.size && `Size: ${item.size}`, item.color && `Color: ${item.color}`].filter(Boolean).join(' · ')}
                                       </p>
                                     </div>
-                                    <div className="text-right flex-shrink-0">
+                                    <div className="text-right shrink-0">
                                       <p className="text-xs text-slate-400">×{item.quantity}</p>
                                       <p className="font-black text-slate-900 text-sm">${(Number(item.price) * item.quantity).toFixed(2)}</p>
                                     </div>

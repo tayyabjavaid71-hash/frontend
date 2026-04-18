@@ -68,7 +68,7 @@ export const AdminProducts: React.FC = () => {
       {/* Error Alert */}
       {error && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <p className="text-red-700 font-semibold">{error}</p>
         </motion.div>
       )}
@@ -100,7 +100,7 @@ export const AdminProducts: React.FC = () => {
           <p className="text-slate-500 text-sm mt-1">{searchTerm ? 'Try a different search' : 'Add your first product to get started'}</p>
         </div>
       ) : (
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-4xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -123,7 +123,7 @@ export const AdminProducts: React.FC = () => {
                   >
                     <td className="p-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 shadow-sm">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 shadow-sm">
                           <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" />
                         </div>
                         <div>

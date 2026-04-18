@@ -20,11 +20,11 @@ export const Dashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="p-8 space-y-6 animate-pulse">
-        <div className="h-24 bg-slate-100 rounded-[2rem]" />
+        <div className="h-24 bg-slate-100 rounded-4xl" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(i => <div key={i} className="h-40 bg-slate-100 rounded-[2.5rem]" />)}
         </div>
-        <div className="h-64 bg-slate-100 rounded-[2rem]" />
+        <div className="h-64 bg-slate-100 rounded-4xl" />
       </div>
     );
   }
@@ -86,10 +86,10 @@ export const Dashboard: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-slate-800 rounded-[2rem] px-8 py-6 text-white shadow-xl"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-linear-to-r from-slate-900 to-slate-800 rounded-4xl px-8 py-6 text-white shadow-xl"
       >
         <div className="flex items-center gap-5">
-          <div className="w-14 h-14 rounded-2xl bg-pink-500/20 border border-pink-400/30 flex items-center justify-center flex-shrink-0">
+          <div className="w-14 h-14 rounded-2xl bg-pink-500/20 border border-pink-400/30 flex items-center justify-center shrink-0">
             <User size={28} className="text-pink-400" />
           </div>
           <div>
@@ -122,7 +122,7 @@ export const Dashboard: React.FC = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6"
+        className="bg-white rounded-4xl border border-slate-100 shadow-sm p-6"
       >
         <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
           <User size={14} className="text-pink-500" /> Admin Info
@@ -186,7 +186,7 @@ export const Dashboard: React.FC = () => {
                   animate={{ height: `${h}%` }}
                   transition={{ delay: 0.5 + i * 0.05 }}
                   key={i}
-                  className="flex-1 bg-gradient-to-t from-primary/20 to-primary rounded-t-lg group-hover:to-white transition-colors"
+                  className="flex-1 bg-linear-to-t from-primary/20 to-primary rounded-t-lg group-hover:to-white transition-colors"
                 />
               ))}
             </div>
@@ -214,7 +214,7 @@ export const Dashboard: React.FC = () => {
                   transition={{ delay: i * 0.06 }}
                   className="flex gap-4 items-center"
                 >
-                  <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-primary font-black text-xs flex-shrink-0">
+                  <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-primary font-black text-xs shrink-0">
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">

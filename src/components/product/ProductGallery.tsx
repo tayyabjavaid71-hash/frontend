@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProductGalleryProps {
@@ -38,7 +38,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images }) => {
           <button
             key={i}
             onClick={() => setMainImage(img)}
-            className={`w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+            className={`w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all shrink-0 ${
               mainImage === img ? 'border-primary ring-4 ring-primary/10' : 'border-transparent opacity-60 hover:opacity-100'
             }`}
           >

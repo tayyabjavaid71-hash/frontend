@@ -173,7 +173,7 @@ export const ReturnPage: React.FC = () => {
                     initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                     className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2"
                   >
-                    <AlertCircle size={15} className="text-red-500 flex-shrink-0 mt-0.5" />
+                    <AlertCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
                     <p className="text-red-700 text-sm">{submitError}</p>
                   </motion.div>
                 )}
@@ -182,7 +182,7 @@ export const ReturnPage: React.FC = () => {
                     initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                     className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-start gap-2"
                   >
-                    <CheckCircle size={15} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle size={15} className="text-emerald-500 shrink-0 mt-0.5" />
                     <p className="text-emerald-700 text-sm font-semibold">Return request submitted successfully! We'll review it within 1-2 business days.</p>
                   </motion.div>
                 )}

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import type { CartItem } from '../../types';
 import { useCart } from '../../hooks/useCart';
@@ -10,7 +10,7 @@ export const CartItemComponent: React.FC<{ item: CartItem }> = ({ item }) => {
 
   return (
     <div className="flex gap-4 border border-slate-100 bg-white p-3 rounded-2xl shadow-sm">
-      <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-50 flex-shrink-0">
+      <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-50 shrink-0">
         <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
       </div>
       <div className="flex-1 flex flex-col justify-between py-1">
