@@ -17,6 +17,10 @@ import { Wishlist } from '../pages/Wishlist';
 import { SuccessPage } from '../pages/SuccessPage';
 import { MyOrdersPage } from '../pages/MyOrdersPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { ShippingPage } from '../pages/ShippingPage';
+import { ReturnPage } from '../pages/ReturnPage';
+import { AdminShippingPage } from '../pages/admin/Shipping';
+import { AdminReturnsPage } from '../pages/admin/Returns';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -30,6 +34,8 @@ const AppRoutes: React.FC = () => {
       <Route path="/wishlist" element={<Wishlist />} />
       <Route path="/success" element={<SuccessPage />} />
       <Route path="/my-orders" element={<MyOrdersPage />} />
+      <Route path="/shipping" element={<ShippingPage />} />
+      <Route path="/returns" element={<ReturnPage />} />
       
       {/* Auth Routes */}
       <Route path="/login" element={<Login />} />
@@ -50,6 +56,8 @@ const AppRoutes: React.FC = () => {
         <Route path="products" element={<AdminProducts />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="categories" element={<AdminCategories />} />
+        <Route path="shipping" element={<AdminShippingPage />} />
+        <Route path="returns" element={<AdminReturnsPage />} />
       </Route>
 
       {/* Fallback */}
