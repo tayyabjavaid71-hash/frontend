@@ -3,6 +3,7 @@ import { API } from '../services/api';
 export type CreateOrderPayload = {
   userId?: string;
   total_amount: number;
+  currency?: string;
   customer_name: string;
   email: string;
   phone: string;
@@ -36,4 +37,13 @@ export const orderApi = {
   getByUserId(userId: string) {
     return API.get(`/orders/user/${userId}`);
   },
+
+  update(orderId: string, payload: { address?: string; phone?: string; city?: string; postal_code?: string }) {
+    return API.put(`/orders/${orderId}`, payload);
+  },
+
+  cancel(orderId: string) {
+    return API.delete(`/orders/${orderId}`);
+  },
 };
+

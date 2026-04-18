@@ -4,17 +4,20 @@ import './index.css';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 
 // React.StrictMode intentionally removed — it causes Supabase to emit
 // "Lock was not released within 5000ms" warnings in development because
 // StrictMode mounts components twice, creating duplicate auth-token lock
 // contention. See: https://github.com/supabase/gotrue-js/issues/806
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <AuthProvider>
-    <CartProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </CartProvider>
-  </AuthProvider>
+  <CurrencyProvider>
+    <AuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>
+  </CurrencyProvider>
 );

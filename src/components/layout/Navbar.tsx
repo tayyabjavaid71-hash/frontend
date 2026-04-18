@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User, Search, Menu, X, LayoutDashboard } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, X, LayoutDashboard, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../hooks/useCart';
 import { useAuth } from '../../hooks/useAuth';
+import { useCurrency } from '../../context/CurrencyContext';
 
 export const Navbar: React.FC = () => {
   const { cartCount, setIsCartOpen } = useCart();
   const { profile } = useAuth();
+  const { currency, setCurrency } = useCurrency();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Close mobile menu when shifting to desktop
@@ -58,6 +60,25 @@ export const Navbar: React.FC = () => {
                   </span>
                 )}
               </button>
+
+              {/* Currency Selector */}
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value as 'PKR' | 'USD' | 'AED')}
+                className="hidden sm:block text-xs font-bold text-slate-600 border border-slate-200 rounded-lg px-2 py-1.5 bg-white hover:border-slate-400 transition-colors cursor-pointer"
+              >
+                <option value="PKR">🇵🇰 PKR</option>
+                <option value="USD">🇺🇸 USD</option>
+                <option value="AED">🇦🇪 AED</option>
+              </select>
+
+              {/* My Orders — shown for logged-in users */}
+              {profile && (
+                <Link to="/my-orders" className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-accent transition-colors">
+                  <Package size={16} />
+                  Orders
+                </Link>
+              )}
 
               {profile?.role === 'admin' && (
                 <Link to="/admin" className="hidden sm:flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
@@ -110,6 +131,29 @@ export const Navbar: React.FC = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
                 Wishlist
               </Link>
+              {profile && (
+                <Link to="/my-orders" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-semibold text-slate-700 hover:text-accent flex items-center gap-2">
+                  <Package size={20} />
+                  My Orders
+                </Link>
+              )}
+              {/* Mobile Currency Selector */}
+              <div>
+                <p className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">Currency</p>
+                <div className="flex gap-2">
+                  {(['PKR', 'USD', 'AED'] as const).map(c => (
+                    <button
+                      key={c}
+                      onClick={() => setCurrency(c)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-black border transition-all ${
+                        currency === c ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-semibold text-slate-700 hover:text-accent flex items-center gap-2">
                 <User size={20} />
                 My Account

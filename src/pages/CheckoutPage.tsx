@@ -7,6 +7,7 @@ import { Footer } from '../components/layout/Footer';
 import { useCart } from '../hooks/useCart';
 import { AuthContext } from '../context/AuthContext';
 import { orderApi } from '../api/orderApi';
+import { useCurrency } from '../context/CurrencyContext';
 
 interface FormData {
   fullName: string;
@@ -22,6 +23,7 @@ export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { cart, cartTotal, clearCart } = useCart();
   const { user } = useContext(AuthContext)!;
+  const { currency, setCurrency, formatPrice, convert } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
@@ -86,14 +88,15 @@ export const CheckoutPage: React.FC = () => {
 
     try {
       const response = await orderApi.create({
-        userId: user?.id,           // undefined for guests → backend sets null
+        userId: user?.id,
         customer_name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
         address: formData.address,
         city: formData.city,
         postal_code: formData.postalCode,
-        total_amount: total,
+        total_amount: convert(total),
+        currency,
         payment_method: formData.paymentMethod,
         status: 'pending',
         items: cart.map(item => ({
@@ -225,28 +228,49 @@ export const CheckoutPage: React.FC = () => {
           {/* Right: Order Summary (1/3) */}
           <div className="lg:col-span-1">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="sticky top-32 bg-slate-50 p-8 rounded-3xl border border-slate-200">
-              <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-8 pb-6 border-b border-slate-200">Order Summary</h2>
+              <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 pb-6 border-b border-slate-200">Order Summary</h2>
+
+              {/* Currency Selector */}
+              <div className="mb-6 pb-6 border-b border-slate-200">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Display Currency</p>
+                <div className="flex gap-2">
+                  {(['PKR', 'USD', 'AED'] as const).map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setCurrency(c)}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-black tracking-widest border-2 transition-all ${
+                        currency === c
+                          ? 'bg-slate-900 text-white border-slate-900'
+                          : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between text-sm text-slate-600">
                   <span>Subtotal</span>
-                  <span className="font-bold text-slate-800">${cartTotal.toFixed(2)}</span>
+                  <span className="font-bold text-slate-800">{formatPrice(cartTotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm text-slate-600">
                   <span className="flex items-center gap-2">
                     <Truck size={14} /> Shipping
                   </span>
-                  <span className="font-bold text-slate-800">{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
+                  <span className="font-bold text-slate-800">{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span>
                 </div>
                 {shipping > 0 && (
-                  <p className="text-xs text-slate-400 italic">Free shipping on orders over $500</p>
+                  <p className="text-xs text-slate-400 italic">Free shipping on orders over PKR 500</p>
                 )}
               </div>
 
               <div className="pt-8 border-t border-slate-200 mb-8">
                 <div className="flex justify-between items-end">
                   <span className="text-xs font-black uppercase tracking-widest text-slate-800">Total</span>
-                  <span className="text-4xl font-black text-primary tracking-tighter">${total.toFixed(2)}</span>
+                  <span className="text-4xl font-black text-primary tracking-tighter">{formatPrice(total)}</span>
                 </div>
               </div>
 

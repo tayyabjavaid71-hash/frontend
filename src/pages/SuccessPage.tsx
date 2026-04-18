@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, ShoppingBag, ArrowRight, Package, Truck, Loader2, MapPin, Phone } from 'lucide-react';
+import { CheckCircle2, ShoppingBag, ArrowRight, Package, Truck, Loader2, MapPin, Phone, Download } from 'lucide-react';
 import type { Order } from '../types';
 import { orderService } from '../services/orderService';
 
@@ -222,8 +222,18 @@ export const SuccessPage: React.FC = () => {
               <ShoppingBag size={18} />
               Continue Shopping
             </Link>
-            <Link to="/account" className="group bg-slate-100 text-slate-800 px-10 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all flex items-center justify-center gap-3">
-              View Orders
+            {orderId && (
+              <a
+                href={`/api/orders/${orderId}/invoice`}
+                download={`JT-Invoice-${orderId.substring(0, 8).toUpperCase()}.pdf`}
+                className="group bg-slate-100 text-slate-800 px-10 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all flex items-center justify-center gap-3"
+              >
+                <Download size={18} />
+                Download Invoice
+              </a>
+            )}
+            <Link to="/my-orders" className="group border-2 border-slate-200 text-slate-700 px-10 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:border-slate-400 transition-all flex items-center justify-center gap-3">
+              My Orders
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
         </div>

@@ -33,6 +33,7 @@ export interface OrderItem {
   variation_id?: string;
   quantity: number;
   price: number;
+  price_at_purchase?: number;
   size?: string;
   color?: string;
   created_at: string;
@@ -54,9 +55,12 @@ export interface Order {
   user_id?: string;
   customer_name: string;
   phone: string;
+  email?: string;
   address: string;
   city: string;
+  postal_code?: string;
   total_amount: number;
+  currency?: string;
   status: OrderStatus;
   payment_method?: string;
   created_at: string;

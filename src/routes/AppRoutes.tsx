@@ -15,6 +15,7 @@ import { CheckoutPage } from '../pages/CheckoutPage';
 import { Register } from '../pages/Register';
 import { Wishlist } from '../pages/Wishlist';
 import { SuccessPage } from '../pages/SuccessPage';
+import { MyOrdersPage } from '../pages/MyOrdersPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 
 const AppRoutes: React.FC = () => {
@@ -28,6 +29,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/wishlist" element={<Wishlist />} />
       <Route path="/success" element={<SuccessPage />} />
+      <Route path="/my-orders" element={<MyOrdersPage />} />
       
       {/* Auth Routes */}
       <Route path="/login" element={<Login />} />
