@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import {
   RotateCcw, RefreshCw, Search, Loader2, AlertCircle,
   Edit2, Trash2, Save, X,
@@ -25,12 +25,12 @@ const ALL_REFUND_STATUSES: Array<ReturnRecord['refund_status']> = ['not_processe
 type EditState = UpdateReturnPayload & { id: string };
 
 export const AdminReturnsPage: React.FC = () => {
-  const [records, setRecords]       = useState<ReturnRecord[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState<string | null>(null);
+  const [records, setRecords]             = useState<ReturnRecord[]>([]);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState<string | null>(null);
   const [setupRequired, setSetupRequired] = useState(false);
-  const [search, setSearch]         = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [search, setSearch]               = useState('');
+  const [filterStatus, setFilterStatus]   = useState('');
 
   const [editState, setEditState]   = useState<EditState | null>(null);
   const [saving, setSaving]         = useState(false);
@@ -118,10 +118,13 @@ export const AdminReturnsPage: React.FC = () => {
           <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-amber-800 text-sm">Database setup required</p>
-            <p className="text-amber-700 text-xs mt-0.5">The <code className="bg-amber-100 px-1 rounded font-mono">returns</code> table doesn't exist yet. Run the SQL migration in Supabase to activate this feature.</p>
+            <p className="text-amber-700 text-xs mt-0.5">
+              The <code className="bg-amber-100 px-1 rounded font-mono">returns</code> table does not exist yet.
+              Run the SQL migration in Supabase to activate this feature.
+            </p>
             <a href="https://supabase.com/dashboard/project/xmssdsjhinitkykdpatb/sql" target="_blank" rel="noreferrer"
               className="inline-block mt-2 text-xs font-bold text-amber-700 underline hover:text-amber-900">
-              Open Supabase SQL Editor →
+              Open Supabase SQL Editor
             </a>
           </div>
         </div>
@@ -133,7 +136,7 @@ export const AdminReturnsPage: React.FC = () => {
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by reason, order ID, user ID…"
+            placeholder="Search by reason, order ID, user ID..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
@@ -204,10 +207,10 @@ export const AdminReturnsPage: React.FC = () => {
                     <tr key={record.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-3">
                         <span className="font-mono text-xs font-bold text-slate-700">
-                          {record.order_id ? record.order_id.slice(0, 8).toUpperCase() : '—'}
+                          {record.order_id ? record.order_id.slice(0, 8).toUpperCase() : '-'}
                         </span>
                         {record.user_id && (
-                          <p className="text-slate-400 text-[10px] font-mono mt-0.5">{record.user_id.slice(0, 8)}…</p>
+                          <p className="text-slate-400 text-[10px] font-mono mt-0.5">{record.user_id.slice(0, 8)}...</p>
                         )}
                       </td>
                       <td className="px-4 py-3 max-w-[200px]">
@@ -249,10 +252,10 @@ export const AdminReturnsPage: React.FC = () => {
                             className="border border-slate-200 rounded-lg px-2 py-1 text-xs w-full focus:outline-none focus:ring-1 focus:ring-amber-400"
                             value={editState.admin_notes ?? ''}
                             onChange={e => setEditState(s => s ? { ...s, admin_notes: e.target.value } : s)}
-                            placeholder="Admin notes…"
+                            placeholder="Admin notes..."
                           />
                         ) : (
-                          <p className="text-slate-500 text-xs line-clamp-2">{record.admin_notes ?? '—'}</p>
+                          <p className="text-slate-500 text-xs line-clamp-2">{record.admin_notes ?? '-'}</p>
                         )}
                       </td>
                       <td className="px-4 py-3 text-slate-400 text-xs whitespace-nowrap">

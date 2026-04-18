@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Truck, Plus, RefreshCw, Search, Loader2, AlertCircle,
@@ -7,11 +7,11 @@ import {
 import { shippingApi, type ShippingRecord, type UpdateShippingPayload, type CreateShippingPayload } from '../../api/shippingApi';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  processing:       { label: 'Processing',        color: 'bg-amber-100 text-amber-800 border-amber-200' },
-  shipped:          { label: 'Shipped',            color: 'bg-blue-100 text-blue-800 border-blue-200' },
-  out_for_delivery: { label: 'Out for Delivery',   color: 'bg-purple-100 text-purple-800 border-purple-200' },
-  delivered:        { label: 'Delivered',          color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-  failed:           { label: 'Failed',             color: 'bg-red-100 text-red-800 border-red-200' },
+  processing:       { label: 'Processing',      color: 'bg-amber-100 text-amber-800 border-amber-200' },
+  shipped:          { label: 'Shipped',          color: 'bg-blue-100 text-blue-800 border-blue-200' },
+  out_for_delivery: { label: 'Out for Delivery', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+  delivered:        { label: 'Delivered',        color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+  failed:           { label: 'Failed',           color: 'bg-red-100 text-red-800 border-red-200' },
 };
 
 const ALL_STATUSES = Object.keys(STATUS_CONFIG) as Array<ShippingRecord['status']>;
@@ -31,20 +31,20 @@ const emptyCreate: CreateShippingPayload = {
 };
 
 export const AdminShippingPage: React.FC = () => {
-  const [records, setRecords]       = useState<ShippingRecord[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState<string | null>(null);
+  const [records, setRecords]             = useState<ShippingRecord[]>([]);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState<string | null>(null);
   const [setupRequired, setSetupRequired] = useState(false);
-  const [search, setSearch]         = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [search, setSearch]               = useState('');
+  const [filterStatus, setFilterStatus]   = useState('');
 
   const [editState, setEditState]   = useState<EditState | null>(null);
   const [saving, setSaving]         = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const [showCreate, setShowCreate] = useState(false);
-  const [createForm, setCreateForm] = useState<CreateShippingPayload>(emptyCreate);
-  const [creating, setCreating]     = useState(false);
+  const [showCreate, setShowCreate]   = useState(false);
+  const [createForm, setCreateForm]   = useState<CreateShippingPayload>(emptyCreate);
+  const [creating, setCreating]       = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
   const load = useCallback(() => {
@@ -101,11 +101,11 @@ export const AdminShippingPage: React.FC = () => {
     try {
       const payload: CreateShippingPayload = {
         ...createForm,
-        order_id: createForm.order_id || undefined,
-        user_id: createForm.user_id || undefined,
-        postal_code: createForm.postal_code || undefined,
+        order_id:        createForm.order_id        || undefined,
+        user_id:         createForm.user_id         || undefined,
+        postal_code:     createForm.postal_code     || undefined,
         tracking_number: createForm.tracking_number || undefined,
-        notes: createForm.notes || undefined,
+        notes:           createForm.notes           || undefined,
       };
       const res = await shippingApi.create(payload);
       setRecords(r => [res.data.data, ...r]);
@@ -196,7 +196,7 @@ export const AdminShippingPage: React.FC = () => {
                 <button type="submit" disabled={creating}
                   className="bg-slate-900 hover:bg-slate-700 disabled:opacity-50 text-white px-5 py-2 rounded-xl font-bold text-sm inline-flex items-center gap-2 transition-colors">
                   {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                  {creating ? 'Creating…' : 'Create'}
+                  {creating ? 'Creating...' : 'Create'}
                 </button>
                 <button type="button" onClick={() => setShowCreate(false)}
                   className="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors">
@@ -208,13 +208,31 @@ export const AdminShippingPage: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Setup Required Banner */}
+      {setupRequired && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5 flex items-start gap-3">
+          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-amber-800 text-sm">Database setup required</p>
+            <p className="text-amber-700 text-xs mt-0.5">
+              The <code className="bg-amber-100 px-1 rounded font-mono">shipping</code> table does not exist yet.
+              Run the SQL migration in Supabase to activate this feature.
+            </p>
+            <a href="https://supabase.com/dashboard/project/xmssdsjhinitkykdpatb/sql" target="_blank" rel="noreferrer"
+              className="inline-block mt-2 text-xs font-bold text-amber-700 underline hover:text-amber-900">
+              Open Supabase SQL Editor
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="flex gap-3 mb-5 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search address, city, tracking, order ID…"
+            placeholder="Search address, city, tracking, order ID..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
@@ -243,21 +261,6 @@ export const AdminShippingPage: React.FC = () => {
           );
         })}
       </div>
-
-      {/* Setup Required Banner */}
-      {setupRequired && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5 flex items-start gap-3">
-          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold text-amber-800 text-sm">Database setup required</p>
-            <p className="text-amber-700 text-xs mt-0.5">The <code className="bg-amber-100 px-1 rounded font-mono">shipping</code> table doesn't exist yet. Run the SQL migration in Supabase to activate this feature.</p>
-            <a href="https://supabase.com/dashboard/project/xmssdsjhinitkykdpatb/sql" target="_blank" rel="noreferrer"
-              className="inline-block mt-2 text-xs font-bold text-amber-700 underline hover:text-amber-900">
-              Open Supabase SQL Editor →
-            </a>
-          </div>
-        </div>
-      )}
 
       {/* Error */}
       {error && (
@@ -299,7 +302,7 @@ export const AdminShippingPage: React.FC = () => {
                     <tr key={record.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-3">
                         <span className="font-mono text-xs font-bold text-slate-700">
-                          {record.order_id ? record.order_id.slice(0, 8).toUpperCase() : '—'}
+                          {record.order_id ? record.order_id.slice(0, 8).toUpperCase() : '-'}
                         </span>
                       </td>
                       <td className="px-4 py-3 max-w-[180px]">
@@ -316,7 +319,7 @@ export const AdminShippingPage: React.FC = () => {
                             placeholder="Tracking #"
                           />
                         ) : (
-                          <span className="font-mono text-xs text-slate-600">{record.tracking_number ?? '—'}</span>
+                          <span className="font-mono text-xs text-slate-600">{record.tracking_number ?? '-'}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
