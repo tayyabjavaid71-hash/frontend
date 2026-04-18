@@ -34,6 +34,7 @@ export const AdminShippingPage: React.FC = () => {
   const [records, setRecords]       = useState<ShippingRecord[]>([]);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState<string | null>(null);
+  const [setupRequired, setSetupRequired] = useState(false);
   const [search, setSearch]         = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
@@ -49,8 +50,12 @@ export const AdminShippingPage: React.FC = () => {
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
+    setSetupRequired(false);
     shippingApi.getAll()
-      .then(res => setRecords(res.data.data ?? []))
+      .then(res => {
+        setRecords(res.data.data ?? []);
+        if ((res.data as any).setupRequired) setSetupRequired(true);
+      })
       .catch(() => setError('Failed to load shipping records.'))
       .finally(() => setLoading(false));
   }, []);
@@ -238,6 +243,21 @@ export const AdminShippingPage: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Setup Required Banner */}
+      {setupRequired && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5 flex items-start gap-3">
+          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-amber-800 text-sm">Database setup required</p>
+            <p className="text-amber-700 text-xs mt-0.5">The <code className="bg-amber-100 px-1 rounded font-mono">shipping</code> table doesn't exist yet. Run the SQL migration in Supabase to activate this feature.</p>
+            <a href="https://supabase.com/dashboard/project/xmssdsjhinitkykdpatb/sql" target="_blank" rel="noreferrer"
+              className="inline-block mt-2 text-xs font-bold text-amber-700 underline hover:text-amber-900">
+              Open Supabase SQL Editor →
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Error */}
       {error && (
