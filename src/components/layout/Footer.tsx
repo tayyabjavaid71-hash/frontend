@@ -8,8 +8,10 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-8">
           
           <div className="md:col-span-1">
-            <Link to="/" className="inline-block mb-5">
-              <img src="/logo.png" alt="JT Collections" className="h-24 w-auto object-contain" />
+            <Link to="/" className="inline-block mb-6">
+              <div className="bg-white rounded-2xl p-3 inline-block shadow-md">
+                <img src="/logo.png" alt="JT Collections" className="h-28 w-auto object-contain" />
+              </div>
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed mb-6">
               Premium women's fashion for every occasion. Discover modern luxury seamlessly designed for your aesthetic.
@@ -50,12 +52,9 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-slate-700 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="JT Collections" className="h-10 w-auto object-contain opacity-80" />
-            <p className="text-sm text-slate-500">
-              © {new Date().getFullYear()} JT Collections. All rights reserved.
-            </p>
-          </div>
+          <p className="text-sm text-slate-500">
+            © {new Date().getFullYear()} JT Collections. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
