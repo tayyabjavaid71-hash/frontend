@@ -141,13 +141,23 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
     if (e.dataTransfer.files.length) handleFilesSelected(e.dataTransfer.files);
   };
 
-  // ── Remove image ─────────────────────────────────────────────────────────
-  const removeImage = (url: string) => {
+  // ── Remove image (removes from UI and deletes from Supabase Storage) ────
+  const removeImage = useCallback(async (url: string) => {
+    // Optimistically remove from UI immediately
     setImageList(prev => prev.filter(u => u !== url));
     if (formData.image_url === url) {
       setFormData(p => ({ ...p, image_url: '' }));
     }
-  };
+    // Only delete from storage if it's a Supabase-hosted URL
+    if (url.includes('supabase.co/storage')) {
+      try {
+        await API.delete('/admin/images', { data: { url } });
+      } catch (err) {
+        // Non-fatal: file may already be gone or URL may be external
+        console.warn('[ProductForm] Storage delete failed (non-fatal):', err);
+      }
+    }
+  }, [formData.image_url]);
 
   // ── Set as main/cover image ──────────────────────────────────────────────
   const setMainImage = (url: string) => {
