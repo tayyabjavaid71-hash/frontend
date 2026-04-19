@@ -17,6 +17,7 @@ export const ProductPage: React.FC = () => {
   const [product, setProduct] = useState<any>(null);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedColor, setSelectedColor] = useState<string>('');
 
   useEffect(() => {
     const fetchFullData = async () => {
@@ -63,11 +64,21 @@ export const ProductPage: React.FC = () => {
     );
   }
 
-  const galleryImages = [
+  const allGalleryImages: string[] = [
     ...(Array.isArray(product.images) ? product.images : []),
     ...(Array.isArray(product.product_images) ? product.product_images.map((img: any) => img.image_url) : []),
     product.image_url,
-  ].filter(Boolean);
+  ].filter((img): img is string => typeof img === 'string' && img.trim() !== '');
+
+  // When a color is selected, try to show images that include the color name in the URL.
+  // Falls back to all images if no color-specific images are found.
+  const galleryImages = (() => {
+    if (!selectedColor) return allGalleryImages;
+    const colored = allGalleryImages.filter(img =>
+      img.toLowerCase().includes(selectedColor.toLowerCase())
+    );
+    return colored.length > 0 ? colored : allGalleryImages;
+  })();
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -93,7 +104,8 @@ export const ProductPage: React.FC = () => {
                 {/* Right: Info (Occupies 5/12 on large screens) */}
                 <div className="lg:col-span-5">
                     <ProductInfo 
-                        product={product} 
+                        product={product}
+                        onColorChange={setSelectedColor}
                         onAddToCart={(prod, vars) => addToCart({
                             id: product.id,
                             title: product.title,

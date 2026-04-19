@@ -4,6 +4,7 @@ import { ShoppingBag, Zap, Star, ShieldCheck, Truck, ChevronDown, Info } from 'l
 import { WishlistButton } from '../wishlist/WishlistButton';
 import { productService, calculateFinalPrice } from '../../services/productService';
 import type { ProductVariation } from '../../services/productService';
+import { useCurrency } from '../../context/CurrencyContext';
 
 // SRS Size Chart
 const SIZE_CHART = [
@@ -33,9 +34,10 @@ interface ProductInfoProps {
     includes?: string[];
   };
   onAddToCart: (product: Record<string, unknown>, variants: { size: string; color: string; quantity: number; variationId?: string }) => void;
+  onColorChange?: (color: string) => void;
 }
 
-export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }) => {
+export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, onColorChange }) => {
   const [variations, setVariations] = useState<ProductVariation[]>([]);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
@@ -97,6 +99,8 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }
     return variations.some(v => v.size === size && v.stock > 0);
   };
 
+  const { formatPrice } = useCurrency();
+
   const handleAddToCart = () => {
     if (isOutOfStock) return;
     onAddToCart(
@@ -127,16 +131,16 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }
       {/* Price — shows adjustment for selected size */}
       <div className="flex items-baseline gap-4">
         <span className="text-4xl font-black text-slate-900">
-          PKR {finalPrice.toLocaleString()}
+          {formatPrice(finalPrice)}
         </span>
         {product.old_price && product.old_price > displayBase && (
           <>
-            <span className="text-xl text-slate-400 line-through font-bold">PKR {product.old_price.toLocaleString()}</span>
-            <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">Save PKR {discount.toLocaleString()}</span>
+            <span className="text-xl text-slate-400 line-through font-bold">{formatPrice(product.old_price)}</span>
+            <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">Save {formatPrice(discount)}</span>
           </>
         )}
         {priceAdjustment > 0 && (
-          <span className="text-amber-600 text-xs font-black uppercase tracking-widest">+PKR {priceAdjustment} for {selectedSize}</span>
+          <span className="text-amber-600 text-xs font-black uppercase tracking-widest">+{formatPrice(priceAdjustment)} for {selectedSize}</span>
         )}
       </div>
 
@@ -248,7 +252,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }
             {displayColors.map(c => (
               <button
                 key={c}
-                onClick={() => setSelectedColor(c)}
+                onClick={() => { setSelectedColor(c); onColorChange?.(c); }}
                 className={`group flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all ${
                   selectedColor === c
                   ? 'border-primary bg-primary/5 text-primary'
@@ -280,7 +284,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }
           className="flex-1 bg-primary text-white h-16 rounded-[1.5rem] font-black tracking-widest uppercase text-sm flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-2xl shadow-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ShoppingBag size={20} />
-          {isOutOfStock ? 'Out of Stock' : `Add to Bag — PKR ${finalPrice.toLocaleString()}`}
+          {isOutOfStock ? 'Out of Stock' : `Add to Bag — ${formatPrice(finalPrice)}`}
         </button>
       </div>
 

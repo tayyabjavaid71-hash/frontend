@@ -27,6 +27,7 @@ type Order = {
   city?: string;
   postal_code?: string;
   total_amount: number;
+  currency?: string;
   status: string;
   payment_method?: string;
   payment_status?: string;
@@ -190,7 +191,7 @@ export const AdminOrders: React.FC = () => {
           { label: 'Processing', value: stats.processing,               color: 'bg-indigo-100 text-indigo-800' },
           { label: 'Shipped',    value: stats.shipped,                  color: 'bg-purple-100 text-purple-800' },
           { label: 'Delivered',  value: stats.delivered,                color: 'bg-green-100 text-green-800' },
-          { label: 'Revenue',    value: `$${stats.revenue.toFixed(0)}`, color: 'bg-pink-100 text-pink-800' },
+          { label: 'Revenue',    value: `${stats.revenue.toFixed(0)}`, color: 'bg-pink-100 text-pink-800' },
         ].map(s => (
           <div key={s.label} className={`${s.color} rounded-2xl p-4 text-center`}>
             <p className="text-2xl font-black">{s.value}</p>
@@ -259,7 +260,7 @@ export const AdminOrders: React.FC = () => {
                     {/* Total */}
                     <div className="text-center">
                       <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">Total</p>
-                      <p className="text-xl font-black text-slate-900">${Number(order.total_amount || 0).toFixed(2)}</p>
+                      <p className="text-xl font-black text-slate-900">{order.currency || 'PKR'} {Number(order.total_amount || 0).toLocaleString()}</p>
                     </div>
 
                     {/* Status badge */}
@@ -357,7 +358,7 @@ export const AdminOrders: React.FC = () => {
                                     </div>
                                     <div className="text-right shrink-0">
                                       <p className="text-xs text-slate-400">×{item.quantity}</p>
-                                      <p className="font-black text-slate-900 text-sm">${(Number(item.price) * item.quantity).toFixed(2)}</p>
+                                      <p className="font-black text-slate-900 text-sm">{order.currency || 'PKR'} {(Number(item.price) * item.quantity).toLocaleString()}</p>
                                     </div>
                                   </div>
                                 ))}
@@ -397,7 +398,7 @@ export const AdminOrders: React.FC = () => {
                                 </div>
                                 <div className="flex justify-between border-t border-slate-100 pt-2 mt-1">
                                   <span className="text-slate-500">Total</span>
-                                  <span className="font-black text-slate-900">${Number(order.total_amount || 0).toFixed(2)}</span>
+                                  <span className="font-black text-slate-900">{order.currency || 'PKR'} {Number(order.total_amount || 0).toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>

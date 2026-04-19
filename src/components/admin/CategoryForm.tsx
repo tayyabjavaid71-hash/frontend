@@ -1,7 +1,7 @@
 ﻿import React, { useState } from 'react';
 import { X, Upload } from 'lucide-react';
 import { adminService } from '../../services/adminService';
-import { supabase } from '../../services/supabaseClient';
+import { API } from '../../services/api';
 
 interface CategoryFormProps {
   category?: any;
@@ -23,26 +23,28 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ category, onClose, o
     if (!file) return;
 
     setUploading(true);
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `categories/${fileName}`;
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `categories/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('jt-brand-assets')
-      .upload(filePath, file);
+      // 1. Get a signed upload URL from the backend (uses service role key)
+      const { data } = await API.post('/admin/upload-url', { path: filePath, contentType: file.type });
+      const { signedUrl, publicUrl } = data;
 
-    if (uploadError) {
-      alert('Error uploading image!');
+      // 2. PUT the file directly to Supabase using the signed URL
+      const uploadRes = await fetch(signedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+      if (!uploadRes.ok) throw new Error('Upload failed');
+
+      setFormData({ ...formData, image_url: publicUrl });
+    } catch (err: any) {
+      alert('Error uploading image: ' + (err.message || 'Unknown error'));
+    } finally {
       setUploading(false);
-      return;
     }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('jt-brand-assets')
-      .getPublicUrl(filePath);
-
-    setFormData({ ...formData, image_url: publicUrl });
-    setUploading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
