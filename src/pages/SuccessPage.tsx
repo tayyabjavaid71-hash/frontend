@@ -95,7 +95,8 @@ export const SuccessPage: React.FC = () => {
               Thank you for choosing JT Collections. Our artisans are now preparing your selection for delivery.
           </p>
           <p className="text-sm font-bold text-slate-500">
-            Order confirmation has been sent to <span className="text-primary">{order.customer_name}</span>
+            Order confirmation &amp; invoice sent to{' '}
+            <span className="text-primary">{order.email || order.customer_name}</span>
           </p>
         </div>
 

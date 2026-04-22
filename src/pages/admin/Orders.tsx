@@ -2,10 +2,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle, Calendar, CheckCircle2, ChevronDown, ChevronUp,
-  CreditCard, Loader2, Mail, MapPin, Package, Phone, RefreshCw,
-  ShoppingBag, Trash2, TrendingUp, XCircle,
+  CreditCard, Download, FileText, Loader2, Mail, MapPin, Package,
+  Phone, RefreshCw, ShoppingBag, Trash2, TrendingUp, XCircle,
 } from 'lucide-react';
-import { API } from '../../services/api';
+import { API, getApiToken } from '../../services/api';
 import { supabase } from '../../services/supabaseClient';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -77,6 +77,20 @@ export const AdminOrders: React.FC = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
+  // Export filter state
+  const [exportDateFrom, setExportDateFrom] = useState('');
+  const [exportDateTo,   setExportDateTo]   = useState('');
+  const [exportCategory, setExportCategory] = useState('');
+  const [exporting, setExporting] = useState<'csv' | 'pdf' | null>(null);
+
+  // Available categories (for filter dropdown)
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    API.get('/categories').then(({ data }) => {
+      setCategories(Array.isArray(data) ? data : (data?.categories ?? []));
+    }).catch(() => {});
+  }, []);
+
   const fetchOrders = useCallback(async () => {
     try {
       setError(null);
@@ -129,6 +143,47 @@ export const AdminOrders: React.FC = () => {
     }
   };
 
+  const handleExport = async (format: 'csv' | 'pdf') => {
+    setExporting(format);
+    try {
+      const params = new URLSearchParams();
+      if (filter !== 'all') params.set('status', filter);
+      if (exportDateFrom)  params.set('from', exportDateFrom);
+      if (exportDateTo)    params.set('to', exportDateTo);
+      if (exportCategory)  params.set('category', exportCategory);
+
+      const token = getApiToken();
+      const url = `/api/admin/export/${format}?${params.toString()}`;
+
+      // Use fetch so we can stream the file download with the auth header
+      const res = await fetch(url, {
+        headers: { Authorization: token ? `Bearer ${token}` : '' },
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Export failed (${res.status})`);
+      }
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      const date = new Date().toISOString().slice(0, 10);
+      a.download = format === 'csv'
+        ? `JT-Orders-${date}.csv`
+        : `JT-Orders-Report-${date}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err: any) {
+      setError(err.message || 'Export failed');
+    } finally {
+      setExporting(null);
+    }
+  };
+
   // ── Derived stats ────────────────────────────────────────────────────────
   const stats = {
     total:      orders.length,
@@ -158,18 +213,84 @@ export const AdminOrders: React.FC = () => {
     <div className="p-8 max-w-7xl mx-auto space-y-8">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <span className="text-pink-500 font-black uppercase tracking-[0.3em] text-[10px] block mb-1">Live · Auto-sync</span>
           <h1 className="text-4xl font-black text-slate-900">Orders</h1>
           <p className="text-slate-500 text-sm mt-1">Manage and track all customer orders</p>
         </div>
-        <button
-          onClick={fetchOrders}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-black transition"
-        >
-          <RefreshCw size={14} /> Refresh
-        </button>
+
+        {/* ── Export controls ── */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date range */}
+          <div className="flex items-center gap-1 bg-slate-100 rounded-xl px-3 py-2">
+            <Calendar size={13} className="text-slate-400 shrink-0" />
+            <input
+              type="date"
+              value={exportDateFrom}
+              onChange={e => setExportDateFrom(e.target.value)}
+              className="bg-transparent text-xs text-slate-700 outline-none w-28"
+              title="Export from date"
+            />
+            <span className="text-slate-300 text-xs">–</span>
+            <input
+              type="date"
+              value={exportDateTo}
+              onChange={e => setExportDateTo(e.target.value)}
+              className="bg-transparent text-xs text-slate-700 outline-none w-28"
+              title="Export to date"
+            />
+          </div>
+
+          {/* Category filter */}
+          {categories.length > 0 && (
+            <select
+              value={exportCategory}
+              onChange={e => setExportCategory(e.target.value)}
+              className="bg-slate-100 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none border-0 font-semibold"
+              title="Filter export by category"
+            >
+              <option value="">All Categories</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Export CSV */}
+          <button
+            onClick={() => handleExport('csv')}
+            disabled={exporting !== null}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition disabled:opacity-60"
+            title={`Export ${filter === 'all' ? 'all' : filter} orders as CSV`}
+          >
+            {exporting === 'csv'
+              ? <Loader2 size={14} className="animate-spin" />
+              : <Download size={14} />}
+            Export CSV
+          </button>
+
+          {/* Export PDF */}
+          <button
+            onClick={() => handleExport('pdf')}
+            disabled={exporting !== null}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition disabled:opacity-60"
+            title={`Export ${filter === 'all' ? 'all' : filter} orders as PDF report`}
+          >
+            {exporting === 'pdf'
+              ? <Loader2 size={14} className="animate-spin" />
+              : <FileText size={14} />}
+            Export PDF
+          </button>
+
+          {/* Refresh */}
+          <button
+            onClick={fetchOrders}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-black transition"
+          >
+            <RefreshCw size={14} /> Refresh
+          </button>
+        </div>
       </div>
 
       {/* ── Error banner ── */}

@@ -5,6 +5,7 @@ import { WishlistButton } from '../wishlist/WishlistButton';
 import { productService, calculateFinalPrice } from '../../services/productService';
 import type { ProductVariation } from '../../services/productService';
 import { useCurrency } from '../../context/CurrencyContext';
+import { ColorSelector } from './ColorSelector';
 
 // SRS Size Chart
 const SIZE_CHART = [
@@ -34,7 +35,8 @@ interface ProductInfoProps {
     includes?: string[];
   };
   onAddToCart: (product: Record<string, unknown>, variants: { size: string; color: string; quantity: number; variationId?: string }) => void;
-  onColorChange?: (color: string) => void;
+  /** Called when the user picks a color; imageUrl is the variant's own image (if set) */
+  onColorChange?: (color: string, imageUrl?: string) => void;
 }
 
 export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, onColorChange }) => {
@@ -45,6 +47,8 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, 
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [loadingVariations, setLoadingVariations] = useState(true);
 
+  const normalizeColor = (value: string) => value.toLowerCase().trim().replace(/\s+/g, ' ');
+
   // Fetch real variations from product_variations table
   useEffect(() => {
     const load = async () => {
@@ -52,29 +56,53 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, 
         const vars = await productService.fetchVariations(product.id);
         setVariations(vars);
 
-        // Default to first available size/color
+        // Default to Black when available, else first available color
         if (vars.length > 0) {
-          setSelectedSize(vars[0].size);
-          setSelectedColor(vars[0].color);
+          const preferred =
+            vars.find(v => normalizeColor(v.color) === 'black')
+            ?? vars[0];
+          setSelectedSize(preferred.size);
+          setSelectedColor(preferred.color);
+          onColorChange?.(preferred.color, preferred.image_url || undefined);
         } else {
-          // Fallback to product-level arrays
+          // Fallback to product-level arrays (prefer Black)
+          const firstColor =
+            product.colors?.find((c) => normalizeColor(c) === 'black')
+            ?? product.colors?.[0]
+            ?? '';
           setSelectedSize(product.sizes?.[0] || '');
-          setSelectedColor(product.colors?.[0] || '');
+          setSelectedColor(firstColor);
+          if (firstColor) onColorChange?.(firstColor, undefined);
         }
       } catch {
+        const firstColor =
+          product.colors?.find((c) => normalizeColor(c) === 'black')
+          ?? product.colors?.[0]
+          ?? '';
         setSelectedSize(product.sizes?.[0] || 'M');
-        setSelectedColor(product.colors?.[0] || '');
+        setSelectedColor(firstColor);
+        if (firstColor) onColorChange?.(firstColor, undefined);
       } finally {
         setLoadingVariations(false);
       }
     };
     load();
-  }, [product.id, product.sizes, product.colors]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
 
   // Find the active variation for the selected size + color
-  const activeVariation = variations.find(v => v.size === selectedSize && v.color === selectedColor)
+  const activeVariation = variations.find(v => v.size === selectedSize && normalizeColor(v.color) === normalizeColor(selectedColor))
+    ?? variations.find(v => normalizeColor(v.color) === normalizeColor(selectedColor))
     ?? variations.find(v => v.size === selectedSize)
     ?? null;
+
+  // Build a map: color → image_url (for the ColorSelector dot indicator)
+  const variantImages: Record<string, string> = {};
+  for (const v of variations) {
+    if (v.image_url && v.color && !variantImages[v.color]) {
+      variantImages[v.color] = v.image_url;
+    }
+  }
 
   // SRS Price Logic: Final Price = Base Price + Size Adjustment - Discount
   const priceAdjustment = activeVariation?.price_adjustment ?? 0;
@@ -244,30 +272,15 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, 
 
       {/* Color Selector */}
       {displayColors.length > 0 && (
-        <div>
-          <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">
-            Color — <span className="text-primary">{selectedColor}</span>
-          </h4>
-          <div className="flex flex-wrap gap-3">
-            {displayColors.map(c => (
-              <button
-                key={c}
-                onClick={() => { setSelectedColor(c); onColorChange?.(c); }}
-                className={`group flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all ${
-                  selectedColor === c
-                  ? 'border-primary bg-primary/5 text-primary'
-                  : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
-                }`}
-              >
-                <div
-                  className="w-4 h-4 rounded-full shadow-inner border border-slate-200"
-                  style={{ backgroundColor: c.toLowerCase() === 'white' ? '#fff' : c.toLowerCase() === 'black' ? '#000' : c.toLowerCase() === 'red' ? '#ef4444' : c.toLowerCase() === 'blue' ? '#3b82f6' : c.toLowerCase() === 'green' ? '#22c55e' : c.toLowerCase() === 'pink' ? '#ec4899' : c.toLowerCase() === 'beige' ? '#d4b896' : c.toLowerCase() === 'maroon' ? '#800000' : '#94a3b8' }}
-                />
-                <span className="font-black text-xs uppercase tracking-widest">{c}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <ColorSelector
+          colors={displayColors}
+          selectedColor={selectedColor}
+          variantImages={variantImages}
+          onSelect={(c) => {
+            setSelectedColor(c);
+            onColorChange?.(c, variantImages[c]);
+          }}
+        />
       )}
 
       {/* Quantity + Add to Cart */}

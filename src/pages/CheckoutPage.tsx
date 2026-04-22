@@ -101,6 +101,7 @@ export const CheckoutPage: React.FC = () => {
         status: 'pending',
         items: cart.map(item => ({
           product_id: item.id,
+          title: item.title,
           quantity: item.quantity,
           price: item.price,
           size: item.selectedSize,

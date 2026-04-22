@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Navigate, Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, LayoutGrid, Loader2, Truck, RotateCcw } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, LayoutGrid, Loader2, Mail, Truck, RotateCcw } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
   const { user, profile, isLoading, signOut } = useAuth();
@@ -30,9 +30,10 @@ export const AdminLayout: React.FC = () => {
     { name: 'Categories', path: '/admin/categories', icon: <LayoutGrid size={20} /> },
     { name: 'Products',   path: '/admin/products',   icon: <Package size={20} /> },
     { name: 'Orders',     path: '/admin/orders',     icon: <ShoppingBag size={20} /> },
-    { name: 'Shipping',   path: '/admin/shipping',   icon: <Truck size={20} /> },
-    { name: 'Returns',    path: '/admin/returns',    icon: <RotateCcw size={20} /> },
-    { name: 'Users',      path: '/admin/users',      icon: <Users size={20} /> },
+    { name: 'Shipping',    path: '/admin/shipping',    icon: <Truck     size={20} /> },
+    { name: 'Returns',     path: '/admin/returns',     icon: <RotateCcw size={20} /> },
+    { name: 'Email Logs',  path: '/admin/email-logs',  icon: <Mail      size={20} /> },
+    { name: 'Users',       path: '/admin/users',        icon: <Users     size={20} /> },
   ];
 
   return (

@@ -20,7 +20,31 @@ interface CartContextProps {
 export const CartContext = createContext<CartContextProps | undefined>(undefined);
 
 const LS_KEY = 'jt_brand_cart';
-const loadLocal = (): CartItem[] => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } };
+
+/** Normalize empty-string size/color to undefined so matching is consistent. */
+const normalizeItem = (item: CartItem): CartItem => ({
+  ...item,
+  selectedSize:  item.selectedSize  || undefined,
+  selectedColor: item.selectedColor || undefined,
+});
+
+/** Deduplicate a cart array, merging quantities for exact id+size+color matches. */
+const dedupe = (items: CartItem[]): CartItem[] => {
+  const map = new Map<string, CartItem>();
+  for (const item of items) {
+    const norm = normalizeItem(item);
+    const key = `${norm.id}|${norm.selectedSize ?? ''}|${norm.selectedColor ?? ''}`;
+    const existing = map.get(key);
+    if (existing) {
+      map.set(key, { ...existing, quantity: existing.quantity + norm.quantity });
+    } else {
+      map.set(key, norm);
+    }
+  }
+  return Array.from(map.values());
+};
+
+const loadLocal = (): CartItem[] => { try { return dedupe(JSON.parse(localStorage.getItem(LS_KEY) || '[]')); } catch { return []; } };
 const saveLocal = (cart: CartItem[]) => { try { localStorage.setItem(LS_KEY, JSON.stringify(cart)); } catch {} };
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -53,14 +77,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => { fetchCart(); }, [fetchCart]);
 
   const addToCart = useCallback(async (item: CartItem) => {
+    const normItem = normalizeItem(item);
     setCart(prev => {
       const match = (p: CartItem) =>
-        p.id === item.id &&
-        (p.selectedSize ?? null) === (item.selectedSize ?? null) &&
-        (p.selectedColor ?? null) === (item.selectedColor ?? null);
+        p.id === normItem.id &&
+        (p.selectedSize  ?? null) === (normItem.selectedSize  ?? null) &&
+        (p.selectedColor ?? null) === (normItem.selectedColor ?? null);
       const existing = prev.find(match);
-      if (existing) return prev.map(p => match(p) ? { ...p, quantity: p.quantity + (item.quantity || 1) } : p);
-      return [...prev, { ...item, quantity: item.quantity || 1 }];
+      if (existing) return prev.map(p => match(p) ? { ...p, quantity: p.quantity + (normItem.quantity || 1) } : p);
+      return [...prev, { ...normItem, quantity: normItem.quantity || 1 }];
     });
     setIsCartOpen(true);
     setError(null);
@@ -69,16 +94,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
       const { data: row } = await API.post('/cart', {
-        product_id:     item.id,
-        quantity:       item.quantity || 1,
-        selected_size:  item.selectedSize  || null,
-        selected_color: item.selectedColor || null,
+        product_id:     normItem.id,
+        quantity:       normItem.quantity || 1,
+        selected_size:  normItem.selectedSize  || null,
+        selected_color: normItem.selectedColor || null,
       });
       if (row?.id) {
         setCart(prev => prev.map(p =>
-          p.id === item.id &&
-          (p.selectedSize ?? null) === (item.selectedSize ?? null) &&
-          (p.selectedColor ?? null) === (item.selectedColor ?? null)
+          p.id === normItem.id &&
+          (p.selectedSize  ?? null) === (normItem.selectedSize  ?? null) &&
+          (p.selectedColor ?? null) === (normItem.selectedColor ?? null)
             ? { ...p, cart_id: row.id } : p
         ));
       }
@@ -88,8 +113,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const removeFromCart = useCallback(async (id: string, size?: string, color?: string, cart_id?: string) => {
+    const normSize  = size  || undefined;
+    const normColor = color || undefined;
     setCart(prev => prev.filter(p =>
-      !(p.id === id && (p.selectedSize ?? undefined) === size && (p.selectedColor ?? undefined) === color)
+      !(p.id === id && (p.selectedSize ?? undefined) === normSize && (p.selectedColor ?? undefined) === normColor)
     ));
     setError(null);
     try {
@@ -105,9 +132,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     id: string, size: string | undefined, color: string | undefined,
     cart_id: string | undefined, quantity: number
   ) => {
-    if (quantity < 1) { await removeFromCart(id, size, color, cart_id); return; }
+    const normSize  = size  || undefined;
+    const normColor = color || undefined;
+    if (quantity < 1) { await removeFromCart(id, normSize, normColor, cart_id); return; }
     setCart(prev => prev.map(p =>
-      p.id === id && (p.selectedSize ?? undefined) === size && (p.selectedColor ?? undefined) === color
+      p.id === id && (p.selectedSize ?? undefined) === normSize && (p.selectedColor ?? undefined) === normColor
         ? { ...p, quantity } : p
     ));
     setError(null);

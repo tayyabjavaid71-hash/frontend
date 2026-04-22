@@ -18,6 +18,7 @@ export const ProductPage: React.FC = () => {
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState<string>('');
+  const [variantImageUrl, setVariantImageUrl] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const fetchFullData = async () => {
@@ -68,16 +69,49 @@ export const ProductPage: React.FC = () => {
     ...(Array.isArray(product.images) ? product.images : []),
     ...(Array.isArray(product.product_images) ? product.product_images.map((img: any) => img.image_url) : []),
     product.image_url,
-  ].filter((img): img is string => typeof img === 'string' && img.trim() !== '');
+  ].filter((img, idx, arr): img is string =>
+    typeof img === 'string' && img.trim() !== '' && arr.indexOf(img) === idx
+  );
 
-  // When a color is selected, try to show images that include the color name in the URL.
-  // Falls back to all images if no color-specific images are found.
-  const galleryImages = (() => {
-    if (!selectedColor) return allGalleryImages;
-    const colored = allGalleryImages.filter(img =>
-      img.toLowerCase().includes(selectedColor.toLowerCase())
+  const normalizeColor = (value: string) => value.toLowerCase().trim().replace(/\s+/g, ' ');
+
+  // Determine which image to pin as the main view when a color is selected.
+  // Priority order:
+  //  1. Per-variant image uploaded via admin panel (product_variations.image_url)
+  //  2. Index-based: colors[i] → images[i]  (works if images are uploaded in same order as colors)
+  //  3. URL name match: image filename contains the color name
+  //  4. Undefined → gallery manages its own main image
+  const activeColorImage = (() => {
+    if (!selectedColor) return undefined;
+
+    // 1. Per-variant image_url from DB
+    if (variantImageUrl) return variantImageUrl;
+
+    // 2. Index-based: find where the selected color sits in the colors array
+    const colorList: string[] = Array.isArray(product.colors) ? product.colors : [];
+    const colorIdx = colorList.findIndex(
+      (c: string) => normalizeColor(c) === normalizeColor(selectedColor)
     );
-    return colored.length > 0 ? colored : allGalleryImages;
+    if (colorIdx >= 0 && allGalleryImages[colorIdx]) {
+      return allGalleryImages[colorIdx];
+    }
+
+    // 3. URL name match
+    const compact = selectedColor.toLowerCase().replace(/\s+/g, '');
+    const dashed = selectedColor.toLowerCase().trim().replace(/\s+/g, '-');
+    const underscored = selectedColor.toLowerCase().trim().replace(/\s+/g, '_');
+    const spaced = normalizeColor(selectedColor);
+
+    const urlMatch = allGalleryImages.find((img) => {
+      const source = img.toLowerCase();
+      return source.includes(compact)
+        || source.includes(dashed)
+        || source.includes(underscored)
+        || source.includes(spaced);
+    });
+    if (urlMatch) return urlMatch;
+
+    return undefined;
   })();
 
   return (
@@ -98,14 +132,20 @@ export const ProductPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
                 {/* Left: Gallery (Occupies 7/12 on large screens) */}
                 <div className="lg:col-span-7">
-                  <ProductGallery images={galleryImages.length ? galleryImages : [product.image_url].filter(Boolean)} />
+                  <ProductGallery
+                    images={allGalleryImages.length ? allGalleryImages : [product.image_url].filter(Boolean)}
+                    selectedImage={activeColorImage}
+                  />
                 </div>
 
                 {/* Right: Info (Occupies 5/12 on large screens) */}
                 <div className="lg:col-span-5">
                     <ProductInfo 
                         product={product}
-                        onColorChange={setSelectedColor}
+                        onColorChange={(color, imageUrl) => {
+                          setSelectedColor(color);
+                          setVariantImageUrl(imageUrl);
+                        }}
                         onAddToCart={(prod, vars) => addToCart({
                             id: product.id,
                             title: product.title,

@@ -56,7 +56,12 @@ export const CartDrawer: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                cart.map(item => <CartItem key={item.id} item={item} />)
+                cart.map(item => (
+                  <CartItem
+                    key={item.cart_id || `${item.id}-${item.selectedSize ?? ''}-${item.selectedColor ?? ''}`}
+                    item={item}
+                  />
+                ))
               )}
             </div>
 

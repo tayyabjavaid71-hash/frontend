@@ -14,6 +14,7 @@ export type CreateOrderPayload = {
   status?: string;
   items: Array<{
     product_id: string;
+    title?: string;
     quantity: number;
     price: number;
     size?: string;

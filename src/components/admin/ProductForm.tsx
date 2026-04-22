@@ -18,6 +18,7 @@ interface VariationRow {
   size: string;
   stock: number;
   price_adjustment: number;
+  image_url?: string;
   isNew?: boolean;
 }
 
@@ -80,7 +81,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
       setLoadingVariations(true);
       productService.fetchVariations(product.id as string).then((vars: ProductVariation[]) => {
         setVariations(vars.map(v => ({
-          id: v.id, color: v.color, size: v.size, stock: v.stock, price_adjustment: v.price_adjustment,
+          id: v.id, color: v.color, size: v.size, stock: v.stock, price_adjustment: v.price_adjustment, image_url: v.image_url || '',
         })));
       }).finally(() => setLoadingVariations(false));
     }
@@ -166,7 +167,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
   };
 
   const addVariationRow = () => {
-    setVariations(prev => [...prev, { color: '', size: 'M', stock: 0, price_adjustment: 0, isNew: true }]);
+    setVariations(prev => [...prev, { color: '', size: 'M', stock: 0, price_adjustment: 0, image_url: '', isNew: true }]);
   };
 
   const removeVariationRow = async (index: number) => {
@@ -214,13 +215,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
         const newVars = variations.filter(v => v.isNew && v.color && v.size);
         for (const v of newVars) {
           await productService.addVariation(productId, {
-            color: v.color, size: v.size, stock: v.stock, price_adjustment: v.price_adjustment,
+            color: v.color, size: v.size, stock: v.stock, price_adjustment: v.price_adjustment, image_url: v.image_url || undefined,
           });
         }
-        // Update existing variations' stock
+        // Update existing variations' stock, price, color, size, image_url
         const existingVars = variations.filter(v => v.id && !v.isNew);
         for (const v of existingVars) {
-          await supabase.from('product_variations').update({ stock: v.stock, price_adjustment: v.price_adjustment, color: v.color, size: v.size }).eq('id', v.id!);
+          await supabase.from('product_variations').update({
+            stock: v.stock, price_adjustment: v.price_adjustment, color: v.color, size: v.size, image_url: v.image_url || null,
+          }).eq('id', v.id!);
         }
       }
 
@@ -478,21 +481,58 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
                 <>
                   {variations.length > 0 ? (
                     <div className="space-y-3 mb-6">
-                      <div className="grid grid-cols-5 gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">
-                        <span>Color</span><span>Size</span><span>Stock</span><span>+Price</span><span></span>
+                      <div className="grid grid-cols-[1fr_80px_80px_80px_64px_32px] gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">
+                        <span>Color</span><span>Size</span><span>Stock</span><span>+Price</span><span>Image</span><span></span>
                       </div>
                       {variations.map((v, i) => (
-                        <div key={i} className="grid grid-cols-5 gap-2 items-center bg-slate-50 p-3 rounded-xl">
+                        <div key={i} className="grid grid-cols-[1fr_80px_80px_80px_64px_32px] gap-2 items-center bg-slate-50 p-3 rounded-xl">
                           <input type="text" placeholder="Black" value={v.color} onChange={e => updateVariationRow(i, 'color', e.target.value)}
                             className="bg-white border border-slate-100 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-primary" />
                           <select value={v.size} onChange={e => updateVariationRow(i, 'size', e.target.value)}
-                            className="bg-white border border-slate-100 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-primary">
+                            className="bg-white border border-slate-100 rounded-lg px-2 py-2 text-sm font-bold focus:outline-none focus:border-primary">
                             {SRS_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
                           <input type="number" min="0" placeholder="10" value={v.stock} onChange={e => updateVariationRow(i, 'stock', Number(e.target.value))}
-                            className="bg-white border border-slate-100 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-primary" />
-                          <input type="number" placeholder="300" value={v.price_adjustment} onChange={e => updateVariationRow(i, 'price_adjustment', Number(e.target.value))}
-                            className="bg-white border border-slate-100 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-amber-400" />
+                            className="bg-white border border-slate-100 rounded-lg px-2 py-2 text-sm font-bold focus:outline-none focus:border-primary" />
+                          <input type="number" placeholder="0" value={v.price_adjustment} onChange={e => updateVariationRow(i, 'price_adjustment', Number(e.target.value))}
+                            className="bg-white border border-slate-100 rounded-lg px-2 py-2 text-sm font-bold focus:outline-none focus:border-amber-400" />
+
+                          {/* Per-variant image upload */}
+                          <div className="relative w-14 h-14">
+                            {v.image_url ? (
+                              <div className="group relative w-full h-full rounded-lg overflow-hidden border-2 border-primary/30">
+                                <img src={v.image_url} alt={v.color} className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => updateVariationRow(i, 'image_url', '')}
+                                  className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg"
+                                  title="Remove variant image"
+                                >
+                                  <X size={14} className="text-white" />
+                                </button>
+                              </div>
+                            ) : (
+                              <label
+                                className="w-full h-full flex items-center justify-center bg-white border-2 border-dashed border-slate-200 rounded-lg cursor-pointer hover:border-primary transition-colors"
+                                title="Upload variant image"
+                              >
+                                <ImagePlus size={16} className="text-slate-300 hover:text-primary" />
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    const url = await uploadSingleFile(file);
+                                    if (url) updateVariationRow(i, 'image_url', url);
+                                    e.target.value = '';
+                                  }}
+                                />
+                              </label>
+                            )}
+                          </div>
+
                           <button type="button" onClick={() => removeVariationRow(i)} className="flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg p-2 transition-all">
                             <Trash2 size={16} />
                           </button>
@@ -502,7 +542,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSu
                   ) : (
                     <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-2xl mb-6">
                       <p className="font-bold mb-2">No variations yet</p>
-                      <p className="text-xs">Add color + size combinations with stock per variation</p>
+                      <p className="text-xs">Add color + size combinations. Each can have its own image, stock, and price.</p>
                     </div>
                   )}
 

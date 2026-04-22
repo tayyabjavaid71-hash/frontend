@@ -21,6 +21,7 @@ import { ShippingPage } from '../pages/ShippingPage';
 import { ReturnPage } from '../pages/ReturnPage';
 import { AdminShippingPage } from '../pages/admin/Shipping';
 import { AdminReturnsPage } from '../pages/admin/Returns';
+import { AdminEmailLogs } from '../pages/admin/EmailLogs';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -58,6 +59,7 @@ const AppRoutes: React.FC = () => {
         <Route path="categories" element={<AdminCategories />} />
         <Route path="shipping" element={<AdminShippingPage />} />
         <Route path="returns" element={<AdminReturnsPage />} />
+        <Route path="email-logs" element={<AdminEmailLogs />} />
       </Route>
 
       {/* Fallback */}

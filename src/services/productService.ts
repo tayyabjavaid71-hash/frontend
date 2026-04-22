@@ -17,6 +17,7 @@ export interface ProductVariation {
   size: string;
   stock: number;
   price_adjustment: number; // Final Price = base_price + price_adjustment - (base_price - old_price)
+  image_url?: string;       // Per-variant image (optional — falls back to product images)
 }
 
 export interface ProductImage {
@@ -118,6 +119,19 @@ export const productService = {
     const { data, error } = await supabase
       .from('product_variations')
       .insert([{ product_id: productId, ...variation }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as ProductVariation;
+  },
+
+  // Update an existing variation (stock, price_adjustment, color, size, image_url)
+  async updateVariation(variationId: string, updates: Partial<Omit<ProductVariation, 'id' | 'product_id'>>): Promise<ProductVariation> {
+    const { data, error } = await supabase
+      .from('product_variations')
+      .update(updates)
+      .eq('id', variationId)
       .select()
       .single();
 

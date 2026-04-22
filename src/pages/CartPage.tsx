@@ -56,7 +56,7 @@ export const CartPage: React.FC = () => {
               {cart.map((item) => (
                 <motion.div 
                   layout
-                  key={`${item.id}-${item.selectedSize}-${item.selectedColor}`}
+                  key={item.cart_id || `${item.id}-${item.selectedSize ?? ''}-${item.selectedColor ?? ''}`}
                   className="flex flex-col sm:flex-row gap-8 pb-10 border-b border-slate-100 group"
                 >
                   <div className="w-full sm:w-40 h-52 rounded-4xl overflow-hidden bg-slate-50 shrink-0">
