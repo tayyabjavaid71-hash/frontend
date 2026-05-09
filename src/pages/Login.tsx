@@ -2,6 +2,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { supabase } from '../services/supabaseClient';
+import { identifyTikTokUser } from '../utils/tiktokPixel';
 
 export const Login: React.FC = () => {
   const auth = useContext(AuthContext);
@@ -58,6 +59,8 @@ export const Login: React.FC = () => {
 
       // Supabase sign-in succeeded — AuthContext.onAuthStateChange will fire,
       // load the profile, then the useEffect above will navigate to the right page.
+      // TikTok Pixel — identify user for advanced matching
+      identifyTikTokUser(data.user.email ?? email, '', data.user.id);
       setAwaitingProfile(true);
     } catch (err: any) {
       const isOffline = err?.message?.includes('Failed to fetch') || !navigator.onLine;

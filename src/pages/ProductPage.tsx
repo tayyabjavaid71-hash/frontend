@@ -10,6 +10,9 @@ import { ProductGallery } from '../components/product/ProductGallery';
 import { ProductInfo } from '../components/product/ProductInfo';
 import { ProductTabs } from '../components/product/ProductTabs';
 import { ProductCard } from '../components/product/ProductCard';
+import { trackPixelEvent } from '../utils/metaPixel';
+import { sendMetaEvent } from '../services/metaEventService';
+import { logTikTokEvent } from '../services/tiktokEventLogger';
 
 export const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +30,29 @@ export const ProductPage: React.FC = () => {
       try {
         const data = await productService.fetchProductById(id);
         setProduct(data);
+
+        // Fire ViewContent after product data is available
+        const eventId = trackPixelEvent('ViewContent', {
+          content_ids: [id],
+          content_name: data?.title,
+          value: data?.price,
+        });
+        sendMetaEvent({
+          event_name: 'ViewContent',
+          event_id: eventId,
+          content_name: data?.title,
+          content_ids: [id],
+          value: data?.price,
+        });
+
+        // TikTok Pixel — ViewContent
+        logTikTokEvent({
+          eventName: 'ViewContent',
+          productId: id,
+          productName: data?.title ?? '',
+          value: data?.price ?? 0,
+          currency: 'PKR',
+        });
         
         // Fetch related products (same category)
         if (data?.category_id) {
@@ -146,15 +172,39 @@ export const ProductPage: React.FC = () => {
                           setSelectedColor(color);
                           setVariantImageUrl(imageUrl);
                         }}
-                        onAddToCart={(prod, vars) => addToCart({
-                            id: product.id,
-                            title: product.title,
-                            price: (prod.price as number) ?? product.price,
-                            image_url: product.image_url,
-                            quantity: vars.quantity,
-                            selectedSize: vars.size,
-                            selectedColor: vars.color,
-                        })} 
+                        onAddToCart={(prod, vars) => {
+                            const eventId = trackPixelEvent('AddToCart', {
+                              content_ids: [product.id],
+                              content_name: product.title,
+                              value: (prod.price as number) ?? product.price,
+                              num_items: vars.quantity,
+                            });
+                            sendMetaEvent({
+                              event_name: 'AddToCart',
+                              event_id: eventId,
+                              content_name: product.title,
+                              content_ids: [product.id],
+                              value: (prod.price as number) ?? product.price,
+                              num_items: vars.quantity,
+                            });
+                            // TikTok Pixel — AddToCart
+                            logTikTokEvent({
+                              eventName: 'AddToCart',
+                              productId: product.id,
+                              productName: product.title,
+                              value: (prod.price as number) ?? product.price,
+                              currency: 'PKR',
+                            });
+                            addToCart({
+                                id: product.id,
+                                title: product.title,
+                                price: (prod.price as number) ?? product.price,
+                                image_url: product.image_url,
+                                quantity: vars.quantity,
+                                selectedSize: vars.size,
+                                selectedColor: vars.color,
+                            });
+                        }} 
                     />
                 </div>
             </div>

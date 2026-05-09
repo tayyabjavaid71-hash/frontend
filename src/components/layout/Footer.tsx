@@ -38,6 +38,9 @@ export const Footer: React.FC = () => {
               <li className="cursor-pointer hover:text-amber-400 transition-colors">Track Order</li>
               <li className="cursor-pointer hover:text-amber-400 transition-colors">Size Guide</li>
               <li className="cursor-pointer hover:text-amber-400 transition-colors">FAQ</li>
+              <li className="hover:text-amber-400 transition-colors">
+                <Link to="/privacy-policy">Privacy Policy</Link>
+              </li>
             </ul>
           </div>
 
@@ -55,6 +58,9 @@ export const Footer: React.FC = () => {
           <p className="text-sm text-slate-500">
             © {new Date().getFullYear()} JT Collections. All rights reserved.
           </p>
+          <Link to="/privacy-policy" className="text-sm text-slate-500 hover:text-amber-400 transition-colors">
+            Privacy Policy
+          </Link>
         </div>
       </div>
     </footer>

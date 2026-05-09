@@ -8,6 +8,9 @@ import { useCart } from '../hooks/useCart';
 import { AuthContext } from '../context/AuthContext';
 import { orderApi } from '../api/orderApi';
 import { useCurrency } from '../context/CurrencyContext';
+import { trackPixelEvent } from '../utils/metaPixel';
+import { sendMetaEvent } from '../services/metaEventService';
+import { logTikTokEvent } from '../services/tiktokEventLogger';
 
 interface FormData {
   fullName: string;
@@ -111,6 +114,39 @@ export const CheckoutPage: React.FC = () => {
 
       const orderId = response.data?.id || response.data?.order?.id;
       if (orderId) {
+        // Fire Purchase event (browser pixel + server CAPI)
+        const purchaseEventId = trackPixelEvent('Purchase', {
+          value: convert(total),
+          content_ids: cart.map((i) => i.id),
+          num_items: cart.length,
+        });
+        sendMetaEvent({
+          event_name: 'Purchase',
+          event_id: purchaseEventId,
+          value: convert(total),
+          currency,
+          content_ids: cart.map((i) => i.id),
+          num_items: cart.length,
+          email: formData.email,   // hashed server-side for advanced matching
+          phone: formData.phone,
+        });
+
+        // TikTok Pixel — PlaceAnOrder + Purchase
+        await logTikTokEvent({
+          eventName: 'PlaceAnOrder',
+          productId: cart[0]?.id ?? '',
+          productName: cart.map((i) => i.title).join(', '),
+          value: convert(total),
+          currency,
+        });
+        await logTikTokEvent({
+          eventName: 'Purchase',
+          productId: cart[0]?.id ?? '',
+          productName: cart.map((i) => i.title).join(', '),
+          value: convert(total),
+          currency,
+        });
+
         await clearCart();
         navigate(`/success?orderId=${orderId}`);
       } else {

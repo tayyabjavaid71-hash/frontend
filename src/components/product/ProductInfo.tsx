@@ -145,7 +145,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart, 
           <span className="text-primary font-black tracking-widest uppercase text-xs mb-3 block">JT Collections Boutique</span>
           <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight leading-tight">{product.title}</h1>
         </div>
-        <WishlistButton productId={product.id} />
+        <WishlistButton productId={product.id} productName={product.title} productPrice={product.price} />
       </div>
 
       {/* Rating */}

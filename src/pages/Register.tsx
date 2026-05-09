@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User as UserIcon, ArrowRight } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
+import { logTikTokEvent } from '../services/tiktokEventLogger';
+import { identifyTikTokUser } from '../utils/tiktokPixel';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -59,6 +61,9 @@ export const Register: React.FC = () => {
       }
 
       setSuccess(true);
+      // TikTok Pixel — CompleteRegistration + identify
+      logTikTokEvent({ eventName: 'CompleteRegistration', productId: userId, productName: name, value: 0, currency: 'PKR' });
+      identifyTikTokUser(email, '', userId);
       setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Failed to create account.';

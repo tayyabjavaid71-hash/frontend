@@ -8,6 +8,7 @@ import { ProductCard } from '../components/product/ProductCard';
 import { ProductFilters } from '../components/product/ProductFilters';
 import { useSearch } from '../hooks/useSearch';
 import { useProducts } from '../hooks/useProducts';
+import { logTikTokEvent } from '../services/tiktokEventLogger';
 
 export const ProductsPage: React.FC = () => {
   const location = useLocation();
@@ -30,6 +31,17 @@ export const ProductsPage: React.FC = () => {
 
   useEffect(() => {
     fetchProducts(debouncedSearch, category, minPrice, maxPrice, true);
+    // TikTok Pixel — fire Search event when user has typed something
+    if (debouncedSearch.trim()) {
+      logTikTokEvent({
+        eventName: 'Search',
+        productId: '',
+        productName: debouncedSearch,
+        value: 0,
+        currency: 'PKR',
+        searchString: debouncedSearch,
+      });
+    }
   }, [debouncedSearch, category, minPrice, maxPrice]);
 
   return (

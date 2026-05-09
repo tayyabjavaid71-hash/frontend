@@ -22,6 +22,7 @@ import { ReturnPage } from '../pages/ReturnPage';
 import { AdminShippingPage } from '../pages/admin/Shipping';
 import { AdminReturnsPage } from '../pages/admin/Returns';
 import { AdminEmailLogs } from '../pages/admin/EmailLogs';
+import { PrivacyPolicyPage } from '../pages/PrivacyPolicyPage';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -37,6 +38,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/my-orders" element={<MyOrdersPage />} />
       <Route path="/shipping" element={<ShippingPage />} />
       <Route path="/returns" element={<ReturnPage />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
       
       {/* Auth Routes */}
       <Route path="/login" element={<Login />} />

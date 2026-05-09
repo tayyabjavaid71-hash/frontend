@@ -6,6 +6,9 @@ import { useCart } from '../hooks/useCart';
 import { useCurrency } from '../context/CurrencyContext';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
+import { trackPixelEvent } from '../utils/metaPixel';
+import { sendMetaEvent } from '../services/metaEventService';
+import { logTikTokEvent } from '../services/tiktokEventLogger';
 
 export const CartPage: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -147,7 +150,31 @@ export const CartPage: React.FC = () => {
                 </div>
               </div>
 
-              <Link to="/checkout" className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black uppercase text-xs tracking-[0.2em] transition-all flex items-center justify-center gap-4 shadow-2xl shadow-slate-200 hover:bg-black group">
+              <Link
+                to="/checkout"
+                onClick={() => {
+                  const eventId = trackPixelEvent('InitiateCheckout', {
+                    value: total,
+                    num_items: cart.length,
+                    content_ids: cart.map((i) => i.id),
+                  });
+                  sendMetaEvent({
+                    event_name: 'InitiateCheckout',
+                    event_id: eventId,
+                    value: total,
+                    num_items: cart.length,
+                    content_ids: cart.map((i) => i.id),
+                  });
+                  // TikTok Pixel — InitiateCheckout
+                  logTikTokEvent({
+                    eventName: 'InitiateCheckout',
+                    productId: cart[0]?.id ?? '',
+                    productName: cart.map((i) => i.title).join(', '),
+                    value: total,
+                    currency: 'PKR',
+                  });
+                }}
+                className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black uppercase text-xs tracking-[0.2em] transition-all flex items-center justify-center gap-4 shadow-2xl shadow-slate-200 hover:bg-black group">
                 Proceed to Checkout <ArrowRight className="group-hover:translate-x-1 transition-transform" size={16} />
               </Link>
             </div>

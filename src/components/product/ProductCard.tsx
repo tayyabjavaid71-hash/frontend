@@ -5,6 +5,7 @@ import { ShoppingBag } from 'lucide-react';
 import { WishlistButton } from '../wishlist/WishlistButton';
 import { useCart } from '../../hooks/useCart';
 import { useCurrency } from '../../context/CurrencyContext';
+import { logTikTokEvent } from '../../services/tiktokEventLogger';
 
 interface ProductCardProps {
   id: string;
@@ -27,7 +28,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ id, title, price, imag
     <div className="group relative rounded-2xl bg-white border border-slate-100 overflow-hidden shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300">
       
       <div className="relative h-72 overflow-hidden bg-slate-50 block">
-        <WishlistButton productId={id} />
+        <WishlistButton productId={id} productName={title} productPrice={price} />
         <Link to={`/product/${id}`}>
           <img
             src={image_url}
@@ -67,6 +68,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ id, title, price, imag
             onClick={(e) => {
               e.preventDefault();
               addToCart({ id, title, price, image_url, quantity: 1 });
+              logTikTokEvent({ eventName: 'AddToCart', productId: id, productName: title, value: price, currency: 'PKR' });
             }}
             className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 text-slate-600 hover:bg-primary hover:text-white transition-colors"
           >
