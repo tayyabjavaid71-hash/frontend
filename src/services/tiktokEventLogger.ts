@@ -15,6 +15,7 @@ export interface TikTokEventPayload {
   currency?: string;
   contentType?: 'product' | 'product_group';
   searchString?: string;
+  extraPayload?: Record<string, unknown>;
 }
 
 /**
@@ -29,6 +30,7 @@ export async function logTikTokEvent({
   currency = 'PKR',
   contentType = 'product',
   searchString,
+  extraPayload,
 }: TikTokEventPayload): Promise<string> {
   const normalizedProductId = productId.trim() || 'unknown-item';
   const normalizedProductName = productName.trim() || eventName;
@@ -54,7 +56,7 @@ export async function logTikTokEvent({
           value: normalizedValue,
           currency: normalizedCurrency,
           type: contentType,
-        });
+        }, extraPayload);
 
   // 2. Persist to Supabase (non-blocking — failures are logged, not thrown)
   const { error } = await supabase.from('tiktok_events').insert([

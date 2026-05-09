@@ -114,6 +114,14 @@ export const CheckoutPage: React.FC = () => {
 
       const orderId = response.data?.id || response.data?.order?.id;
       if (orderId) {
+        const tiktokContents = cart.map((i) => ({
+          content_id: i.id,
+          content_type: 'product',
+          content_name: i.title,
+          quantity: i.quantity,
+          price: i.price,
+        }));
+
         // Fire Purchase event (browser pixel + server CAPI)
         const purchaseEventId = trackPixelEvent('Purchase', {
           value: convert(total),
@@ -134,17 +142,25 @@ export const CheckoutPage: React.FC = () => {
         // TikTok Pixel — PlaceAnOrder + Purchase
         await logTikTokEvent({
           eventName: 'PlaceAnOrder',
-          productId: cart.map((i) => i.id).join('|') || String(orderId),
+          productId: String(orderId),
           productName: cart.map((i) => i.title).join(', '),
           value: convert(total),
           currency,
+          extraPayload: {
+            contents: tiktokContents,
+            num_items: cart.length,
+          },
         });
         await logTikTokEvent({
           eventName: 'Purchase',
-          productId: cart.map((i) => i.id).join('|') || String(orderId),
+          productId: String(orderId),
           productName: cart.map((i) => i.title).join(', '),
           value: convert(total),
           currency,
+          extraPayload: {
+            contents: tiktokContents,
+            num_items: cart.length,
+          },
         });
 
         await clearCart();
