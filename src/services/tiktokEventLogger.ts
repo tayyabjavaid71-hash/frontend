@@ -30,21 +30,41 @@ export async function logTikTokEvent({
   contentType = 'product',
   searchString,
 }: TikTokEventPayload): Promise<string> {
+  const normalizedProductId = productId.trim() || 'unknown-item';
+  const normalizedProductName = productName.trim() || eventName;
+  const normalizedValue = Number.isFinite(value) ? value : 0;
+  const normalizedCurrency = (currency || 'PKR').trim().toUpperCase();
+
   // 1. Fire browser pixel
   const eventId =
     eventName === 'Search' && searchString
-      ? trackTikTokSearch({ id: productId, name: productName, value, currency, type: contentType }, searchString)
-      : trackTikTokEvent(eventName, { id: productId, name: productName, value, currency, type: contentType });
+      ? trackTikTokSearch(
+          {
+            id: normalizedProductId,
+            name: normalizedProductName,
+            value: normalizedValue,
+            currency: normalizedCurrency,
+            type: contentType,
+          },
+          searchString,
+        )
+      : trackTikTokEvent(eventName, {
+          id: normalizedProductId,
+          name: normalizedProductName,
+          value: normalizedValue,
+          currency: normalizedCurrency,
+          type: contentType,
+        });
 
   // 2. Persist to Supabase (non-blocking — failures are logged, not thrown)
   const { error } = await supabase.from('tiktok_events').insert([
     {
       event_name: eventName,
       event_id: eventId,
-      product_id: productId,
-      product_name: productName,
-      amount: value,
-      currency,
+      product_id: normalizedProductId,
+      product_name: normalizedProductName,
+      amount: normalizedValue,
+      currency: normalizedCurrency,
       search_string: searchString ?? null,
     },
   ]);

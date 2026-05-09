@@ -134,14 +134,14 @@ export const CheckoutPage: React.FC = () => {
         // TikTok Pixel — PlaceAnOrder + Purchase
         await logTikTokEvent({
           eventName: 'PlaceAnOrder',
-          productId: cart[0]?.id ?? '',
+          productId: cart.map((i) => i.id).join('|') || String(orderId),
           productName: cart.map((i) => i.title).join(', '),
           value: convert(total),
           currency,
         });
         await logTikTokEvent({
           eventName: 'Purchase',
-          productId: cart[0]?.id ?? '',
+          productId: cart.map((i) => i.id).join('|') || String(orderId),
           productName: cart.map((i) => i.title).join(', '),
           value: convert(total),
           currency,

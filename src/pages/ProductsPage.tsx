@@ -35,7 +35,7 @@ export const ProductsPage: React.FC = () => {
     if (debouncedSearch.trim()) {
       logTikTokEvent({
         eventName: 'Search',
-        productId: '',
+        productId: 'search-query',
         productName: debouncedSearch,
         value: 0,
         currency: 'PKR',

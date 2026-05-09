@@ -168,7 +168,7 @@ export const CartPage: React.FC = () => {
                   // TikTok Pixel — InitiateCheckout
                   logTikTokEvent({
                     eventName: 'InitiateCheckout',
-                    productId: cart[0]?.id ?? '',
+                    productId: cart.map((i) => i.id).join('|') || 'checkout-session',
                     productName: cart.map((i) => i.title).join(', '),
                     value: total,
                     currency: 'PKR',

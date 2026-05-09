@@ -1,41 +1,58 @@
-﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// TikTok Pixel helper â€” mirrors the pattern used by metaPixel.ts
-// Pixel ID: D7VPDSBC77UEKU3Q3CT0  (also readable from VITE_TIKTOK_PIXEL_ID)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+﻿// -----------------------------------------------------------------------------
+// TikTok Pixel helper
+// Pixel ID: D7VPDSBC77UEKU3Q3CT0 (also readable from VITE_TIKTOK_PIXEL_ID)
+// -----------------------------------------------------------------------------
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TtqFn = (...args: any[]) => void;
 
-// Access ttq via index signature to avoid strict Window type conflicts
-function ttq(...args: unknown[]): void {
+function getTtqObject(): Record<string, unknown> | null {
+  if (typeof window === 'undefined') return null;
   const win = window as unknown as Record<string, unknown>;
-  if (typeof win['ttq'] === 'object' && win['ttq'] !== null) {
-    const q = win['ttq'] as Record<string, unknown>;
-    if (typeof q['track'] === 'function') {
-      (q['track'] as TtqFn)(...args);
-    }
-  }
+  if (typeof win['ttq'] !== 'object' || win['ttq'] === null) return null;
+  return win['ttq'] as Record<string, unknown>;
 }
 
 function isTtqReady(): boolean {
-  const win = window as unknown as Record<string, unknown>;
-  if (typeof win['ttq'] !== 'object' || win['ttq'] === null) return false;
-  const q = win['ttq'] as Record<string, unknown>;
+  const q = getTtqObject();
+  if (!q) return false;
   return typeof q['track'] === 'function';
+}
+
+function normalizeValue(value: number | undefined): number {
+  if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) {
+    return 0;
+  }
+  return value;
+}
+
+function normalizeCurrency(currency: string | undefined): string {
+  const cleaned = (currency ?? 'PKR').trim().toUpperCase();
+  return cleaned.length === 3 ? cleaned : 'PKR';
+}
+
+function normalizeContentId(id: string | undefined, fallback: string): string {
+  const cleaned = (id ?? '').trim();
+  return cleaned.length > 0 ? cleaned : fallback;
+}
+
+function normalizeContentName(name: string | undefined, fallback: string): string {
+  const cleaned = (name ?? '').trim();
+  return cleaned.length > 0 ? cleaned : fallback;
 }
 
 const PIXEL_ID = (import.meta.env.VITE_TIKTOK_PIXEL_ID as string) || 'D7VPDSBC77UEKU3Q3CT0';
 
 /**
  * Inject the TikTok Pixel base snippet and fire the initial PageView.
- * Safe to call multiple times â€” idempotent.
+ * Safe to call multiple times (idempotent).
  */
 export function initTikTokPixel(): void {
   if (typeof window === 'undefined') return;
-  if (isTtqReady()) return; // already initialised
+  if (isTtqReady()) return;
 
   if (!PIXEL_ID) {
-    console.warn('[TikTokPixel] VITE_TIKTOK_PIXEL_ID is not set â€” Pixel disabled.');
+    console.warn('[TikTokPixel] VITE_TIKTOK_PIXEL_ID is not set. Pixel disabled.');
     return;
   }
 
@@ -54,8 +71,8 @@ export function initTikTokPixel(): void {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const setAndDefer = (obj: Record<string, any>, method: string) => {
-    obj[method] = function (...a: unknown[]) {
-      obj.push([method, ...a]);
+    obj[method] = function (...args: unknown[]) {
+      obj.push([method, ...args]);
     };
   };
 
@@ -100,8 +117,6 @@ export function initTikTokPixel(): void {
   ttqObj.page();
 }
 
-// â”€â”€â”€ SHA-256 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 /** Hash a string with SHA-256 (required for PII sent to TikTok). */
 export async function sha256(message: string): Promise<string> {
   if (!message) return '';
@@ -111,8 +126,6 @@ export async function sha256(message: string): Promise<string> {
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 }
-
-// â”€â”€â”€ Identify â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Send hashed PII to TikTok for advanced matching.
@@ -131,16 +144,15 @@ export async function identifyTikTokUser(
     sha256(userId),
   ]);
 
-  const win = window as unknown as Record<string, unknown>;
-  const q = win['ttq'] as Record<string, TtqFn>;
+  const q = getTtqObject() as Record<string, TtqFn> | null;
+  if (!q || typeof q['identify'] !== 'function') return;
+
   q['identify']({
     email: hashedEmail,
     phone_number: hashedPhone,
     external_id: hashedId,
   });
 }
-
-// â”€â”€â”€ Event Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type TikTokEventName =
   | 'ViewContent'
@@ -161,8 +173,6 @@ export interface TikTokProductData {
   currency?: string;
 }
 
-// â”€â”€â”€ Track Event â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 /**
  * Fire a TikTok standard event and return a deduplication event_id.
  */
@@ -174,19 +184,35 @@ export function trackTikTokEvent(
   const eventId = `ttk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   if (!isTtqReady()) return eventId;
 
-  ttq('track', event, {
+  const q = getTtqObject() as Record<string, TtqFn> | null;
+  if (!q || typeof q['track'] !== 'function') return eventId;
+
+  const fallbackIdByEvent: Record<TikTokEventName, string> = {
+    ViewContent: 'view-content',
+    AddToWishlist: 'wishlist-item',
+    Search: 'search-query',
+    AddPaymentInfo: 'payment-step',
+    AddToCart: 'cart-item',
+    InitiateCheckout: 'checkout-session',
+    PlaceAnOrder: 'order-session',
+    CompleteRegistration: 'registration',
+    Purchase: 'purchase-order',
+  };
+
+  const payload = {
     contents: [
       {
-        content_id: product.id,
+        content_id: normalizeContentId(product.id, fallbackIdByEvent[event]),
         content_type: product.type ?? 'product',
-        content_name: product.name,
+        content_name: normalizeContentName(product.name, event),
       },
     ],
-    value: product.value ?? 0,
-    currency: product.currency ?? 'PKR',
+    value: normalizeValue(product.value),
+    currency: normalizeCurrency(product.currency),
     ...extra,
-  });
+  };
 
+  q['track'](event, payload);
   return eventId;
 }
 
@@ -197,6 +223,6 @@ export function trackTikTokSearch(
   product: TikTokProductData,
   searchString: string,
 ): string {
-  return trackTikTokEvent('Search', product, { search_string: searchString });
+  return trackTikTokEvent('Search', product, { search_string: searchString.trim() });
 }
 
