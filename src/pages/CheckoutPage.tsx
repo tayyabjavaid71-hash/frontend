@@ -146,6 +146,9 @@ export const CheckoutPage: React.FC = () => {
           productName: cart.map((i) => i.title).join(', '),
           value: convert(total),
           currency,
+          email: formData.email,
+          phone: formData.phone,
+          externalId: user?.id,
           extraPayload: {
             contents: tiktokContents,
             num_items: cart.length,
@@ -157,6 +160,9 @@ export const CheckoutPage: React.FC = () => {
           productName: cart.map((i) => i.title).join(', '),
           value: convert(total),
           currency,
+          email: formData.email,
+          phone: formData.phone,
+          externalId: user?.id,
           extraPayload: {
             contents: tiktokContents,
             num_items: cart.length,
