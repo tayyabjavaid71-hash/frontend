@@ -35,3 +35,20 @@
     transform: translateY(0);
   }
 }
+
+/* =============================== */
+/* CATEGORY AUTO SCROLL ANIMATION  */
+/* =============================== */
+
+@keyframes categoryScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-category-scroll {
+  animation: categoryScroll 22s linear infinite;
+}
+
+.animate-category-scroll:hover {
+  animation-play-state: paused;
+}
