@@ -76,6 +76,15 @@ export const CheckoutPage: React.FC = () => {
         phone: formData.phone,
         externalId: user?.id,
       });
+      sendTikTokServerEvent({
+        event_name: 'AddPaymentInfo',
+        value: convert(total),
+        currency,
+        email: formData.email,
+        phone: formData.phone,
+        external_id: user?.id,
+        page_url: window.location.href,
+      });
     }
   };
 
@@ -192,6 +201,18 @@ export const CheckoutPage: React.FC = () => {
             contents: tiktokContents,
             num_items: cart.length,
           },
+        });
+        // Server-side CAPI for Purchase (most important event for optimization)
+        sendTikTokServerEvent({
+          event_name: 'Purchase',
+          value: convert(total),
+          currency,
+          contents: tiktokContents,
+          num_items: cart.length,
+          email: formData.email,
+          phone: formData.phone,
+          external_id: user?.id,
+          page_url: window.location.href,
         });
         await logTikTokEvent({
           eventName: 'CompletePayment',

@@ -9,6 +9,7 @@ import { Footer } from '../components/layout/Footer';
 import { trackPixelEvent } from '../utils/metaPixel';
 import { sendMetaEvent } from '../services/metaEventService';
 import { logTikTokEvent } from '../services/tiktokEventLogger';
+import { sendTikTokServerEvent } from '../services/tiktokServerEvent';
 
 export const CartPage: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -165,13 +166,21 @@ export const CartPage: React.FC = () => {
                     num_items: cart.length,
                     content_ids: cart.map((i) => i.id),
                   });
-                  // TikTok Pixel — InitiateCheckout
+                  // TikTok Pixel — InitiateCheckout (browser + server CAPI)
                   logTikTokEvent({
                     eventName: 'InitiateCheckout',
                     productId: cart.map((i) => i.id).join('|') || 'checkout-session',
                     productName: cart.map((i) => i.title).join(', '),
                     value: total,
                     currency: 'PKR',
+                  });
+                  sendTikTokServerEvent({
+                    event_name: 'InitiateCheckout',
+                    value: total,
+                    currency: 'PKR',
+                    contents: cart.map((i) => ({ content_id: i.id, content_type: 'product', content_name: i.title, quantity: i.quantity, price: i.price })),
+                    num_items: cart.length,
+                    page_url: window.location.href,
                   });
                 }}
                 className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black uppercase text-xs tracking-[0.2em] transition-all flex items-center justify-center gap-4 shadow-2xl shadow-slate-200 hover:bg-black group">

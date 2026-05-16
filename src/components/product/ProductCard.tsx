@@ -6,6 +6,7 @@ import { WishlistButton } from '../wishlist/WishlistButton';
 import { useCart } from '../../hooks/useCart';
 import { useCurrency } from '../../context/CurrencyContext';
 import { logTikTokEvent } from '../../services/tiktokEventLogger';
+import { sendTikTokServerEvent } from '../../services/tiktokServerEvent';
 
 interface ProductCardProps {
   id: string;
@@ -81,6 +82,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ id, title, price, imag
             e.preventDefault();
             addToCart({ id, title, price, image_url, quantity: 1 });
             logTikTokEvent({ eventName: 'AddToCart', productId: id, productName: title, value: price, currency: 'PKR' });
+            sendTikTokServerEvent({
+              event_name: 'AddToCart',
+              value: price,
+              currency: 'PKR',
+              contents: [{ content_id: id, content_type: 'product', content_name: title, quantity: 1, price }],
+              num_items: 1,
+              page_url: window.location.href,
+            });
           }}
           className="mt-auto w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
         >

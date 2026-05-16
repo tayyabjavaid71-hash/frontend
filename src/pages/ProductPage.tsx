@@ -13,6 +13,7 @@ import { ProductCard } from '../components/product/ProductCard';
 import { trackPixelEvent } from '../utils/metaPixel';
 import { sendMetaEvent } from '../services/metaEventService';
 import { logTikTokEvent } from '../services/tiktokEventLogger';
+import { sendTikTokServerEvent } from '../services/tiktokServerEvent';
 
 export const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,13 +46,20 @@ export const ProductPage: React.FC = () => {
           value: data?.price,
         });
 
-        // TikTok Pixel — ViewContent
+        // TikTok Pixel — ViewContent (browser + server CAPI)
         logTikTokEvent({
           eventName: 'ViewContent',
           productId: id,
           productName: data?.title ?? '',
           value: data?.price ?? 0,
           currency: 'PKR',
+        });
+        sendTikTokServerEvent({
+          event_name: 'ViewContent',
+          value: data?.price ?? 0,
+          currency: 'PKR',
+          contents: [{ content_id: id, content_type: 'product', content_name: data?.title ?? '', quantity: 1, price: data?.price ?? 0 }],
+          page_url: window.location.href,
         });
         
         // Fetch related products (same category)
