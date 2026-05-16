@@ -9,6 +9,7 @@ import { ProductFilters } from '../components/product/ProductFilters';
 import { useSearch } from '../hooks/useSearch';
 import { useProducts } from '../hooks/useProducts';
 import { logTikTokEvent } from '../services/tiktokEventLogger';
+import { sendTikTokServerEvent } from '../services/tiktokServerEvent';
 
 export const ProductsPage: React.FC = () => {
   const location = useLocation();
@@ -40,6 +41,12 @@ export const ProductsPage: React.FC = () => {
         value: 0,
         currency: 'PKR',
         searchString: debouncedSearch,
+      });
+      // Also fire server-side CAPI for reliable attribution
+      sendTikTokServerEvent({
+        event_name: 'Search',
+        search_string: debouncedSearch,
+        page_url: window.location.href,
       });
     }
   }, [debouncedSearch, category, minPrice, maxPrice]);

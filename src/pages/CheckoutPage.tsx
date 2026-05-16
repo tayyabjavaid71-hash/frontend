@@ -11,6 +11,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { trackPixelEvent } from '../utils/metaPixel';
 import { sendMetaEvent } from '../services/metaEventService';
 import { logTikTokEvent } from '../services/tiktokEventLogger';
+import { sendTikTokServerEvent } from '../services/tiktokServerEvent';
 
 interface FormData {
   fullName: string;
@@ -64,6 +65,18 @@ export const CheckoutPage: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'paymentMethod') {
+      logTikTokEvent({
+        eventName: 'AddPaymentInfo',
+        productId: 'payment-method',
+        productName: value,
+        value: convert(total),
+        currency,
+        email: formData.email,
+        phone: formData.phone,
+        externalId: user?.id,
+      });
+    }
   };
 
   const validateForm = () => {
@@ -154,8 +167,34 @@ export const CheckoutPage: React.FC = () => {
             num_items: cart.length,
           },
         });
+        // Server-side CAPI for PlaceAnOrder (reliable attribution, not blocked by ad-blockers)
+        sendTikTokServerEvent({
+          event_name: 'PlaceAnOrder',
+          value: convert(total),
+          currency,
+          contents: tiktokContents,
+          num_items: cart.length,
+          email: formData.email,
+          phone: formData.phone,
+          external_id: user?.id,
+          page_url: window.location.href,
+        });
         await logTikTokEvent({
           eventName: 'Purchase',
+          productId: String(orderId),
+          productName: cart.map((i) => i.title).join(', '),
+          value: convert(total),
+          currency,
+          email: formData.email,
+          phone: formData.phone,
+          externalId: user?.id,
+          extraPayload: {
+            contents: tiktokContents,
+            num_items: cart.length,
+          },
+        });
+        await logTikTokEvent({
+          eventName: 'CompletePayment',
           productId: String(orderId),
           productName: cart.map((i) => i.title).join(', '),
           value: convert(total),
