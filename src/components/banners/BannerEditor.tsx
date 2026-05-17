@@ -246,6 +246,8 @@ export const BannerEditor: React.FC<BannerEditorProps> = ({ form, setForm, error
                 <div className="grid grid-cols-2 gap-3">
                   <ColorPicker label="Background" value={btn.background_color ?? '#FBBF24'} onChange={v => setBtn(i, 'background_color', v)} />
                   <ColorPicker label="Text Color"  value={btn.text_color       ?? '#000000'} onChange={v => setBtn(i, 'text_color', v)} />
+                  <ColorPicker label="Hover BG"    value={btn.hover_background ?? ''}        onChange={v => setBtn(i, 'hover_background', v)} />
+                  <ColorPicker label="Hover Text"  value={btn.hover_color      ?? ''}        onChange={v => setBtn(i, 'hover_color', v)} />
                   <ColorPicker label="Border"      value={btn.border_color     ?? ''}        onChange={v => setBtn(i, 'border_color', v)} />
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">Border Radius</label>
@@ -257,6 +259,12 @@ export const BannerEditor: React.FC<BannerEditorProps> = ({ form, setForm, error
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">Padding</label>
                     <input value={btn.padding ?? '16px 30px'} onChange={e => setBtn(i, 'padding', e.target.value)}
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Shadow (CSS)</label>
+                    <input value={btn.shadow_style ?? ''} onChange={e => setBtn(i, 'shadow_style', e.target.value)}
+                      placeholder="0 4px 14px rgba(0,0,0,.3)"
                       className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none" />
                   </div>
                   <div>

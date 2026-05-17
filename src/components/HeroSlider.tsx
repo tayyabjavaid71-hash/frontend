@@ -9,6 +9,7 @@ import 'swiper/css/effect-creative';
 
 import { useBannerSlider } from '../hooks/useBannerSlider';
 import { trackBannerEvent } from '../services/bannerService';
+import { BannerButtons } from './banners/BannerButtons';
 import type { Banner } from '../types/banner';
 
 // ── Build background style from banner data ──────────────────────────────────
@@ -100,34 +101,10 @@ const SlideContent: React.FC<{ banner: Banner }> = ({ banner }) => {
         )}
 
         {/* CTA Buttons */}
-        {banner.banner_buttons && banner.banner_buttons.length > 0 && (
-          <div className="flex flex-wrap gap-3">
-            {banner.banner_buttons.map(btn => (
-              <a
-                key={btn.id}
-                href={btn.link}
-                target={btn.open_new_tab ? '_blank' : '_self'}
-                rel={btn.open_new_tab ? 'noopener noreferrer' : undefined}
-                onClick={() =>
-                  trackBannerEvent(banner.id, 'click', btn.id).catch(() => {/* silent */})
-                }
-                className="inline-flex items-center gap-2 font-bold transition-all duration-200 hover:opacity-90 hover:scale-105 active:scale-95 shadow-md no-underline"
-                style={{
-                  backgroundColor: btn.background_color ?? '#FBBF24',
-                  color:           btn.text_color       ?? '#000',
-                  border:          btn.border_color ? `2px solid ${btn.border_color}` : undefined,
-                  borderRadius:    btn.border_radius ?? '14px',
-                  padding:         btn.padding       ?? '14px 28px',
-                  boxShadow:       btn.shadow_style  ?? undefined,
-                  fontSize:        '0.875rem',
-                }}
-              >
-                {btn.icon && <span>{btn.icon}</span>}
-                {btn.text}
-              </a>
-            ))}
-          </div>
-        )}
+        <BannerButtons
+          buttons={banner.banner_buttons ?? []}
+          bannerId={banner.id}
+        />
       </div>
     </div>
   );
