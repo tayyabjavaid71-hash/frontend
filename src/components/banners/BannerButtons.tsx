@@ -28,15 +28,13 @@ const BannerButtonItem: React.FC<{ btn: BannerButton; bannerId: string; index: n
   // Primary (index 0) = solid filled; secondary (index 1+) = glass ghost
   const isPrimary = index === 0;
 
-  // Colors contrast clearly against the dark banner overlay
-  // Primary (btn 1): pure white bg — stands out bright against dark
-  // Secondary (btn 2+): warm amber bg — warm accent, clearly different from dark banner
-  const defaultBg      = isPrimary ? '#ffffff'   : '#F59E0B';
-  const defaultColor   = isPrimary ? '#0f0f0f'   : '#0a0a0a';
-  const defaultHoverBg = isPrimary ? '#f0f0f0'   : '#D97706';
+  // Primary: brand purple #7C3AED | Secondary: warm amber #F59E0B
+  const defaultBg      = isPrimary ? '#7C3AED'   : '#F59E0B';
+  const defaultColor   = isPrimary ? '#ffffff'   : '#0a0a0a';
+  const defaultHoverBg = isPrimary ? '#6D28D9'   : '#D97706';
   const defaultShadow  = isPrimary
-    ? '0 8px 28px rgba(255,255,255,0.35), 0 2px 8px rgba(0,0,0,0.2)'
-    : '0 8px 28px rgba(245,158,11,0.45), 0 2px 8px rgba(0,0,0,0.2)';
+    ? '0 8px 32px rgba(124,58,237,0.55), 0 2px 8px rgba(0,0,0,0.2)'
+    : '0 8px 28px rgba(245,158,11,0.5), 0 2px 8px rgba(0,0,0,0.2)';
 
   const bg    = hovered
     ? (btn.hover_background || defaultHoverBg)
@@ -46,7 +44,7 @@ const BannerButtonItem: React.FC<{ btn: BannerButton; bannerId: string; index: n
     : (btn.text_color  || defaultColor);
 
   const border = isPrimary
-    ? (btn.border_color ? `2px solid ${btn.border_color}` : '2px solid rgba(255,255,255,0.9)')
+    ? (btn.border_color ? `2px solid ${btn.border_color}` : '2px solid #7C3AED')
     : (btn.border_color ? `2px solid ${btn.border_color}` : '2px solid #F59E0B');
 
   const style: React.CSSProperties = {
@@ -58,8 +56,8 @@ const BannerButtonItem: React.FC<{ btn: BannerButton; bannerId: string; index: n
     boxShadow:      hovered
       ? (btn.shadow_style ?? defaultShadow)
       : (isPrimary
-          ? '0 4px 18px rgba(255,255,255,0.2), 0 2px 6px rgba(0,0,0,0.15)'
-          : '0 4px 16px rgba(245,158,11,0.3), 0 2px 6px rgba(0,0,0,0.15)'),
+          ? '0 4px 20px rgba(124,58,237,0.4), 0 2px 6px rgba(0,0,0,0.15)'
+          : '0 4px 16px rgba(245,158,11,0.35), 0 2px 6px rgba(0,0,0,0.15)'),
     backdropFilter:  undefined,
     WebkitBackdropFilter: undefined,
     fontSize:       '0.875rem',
