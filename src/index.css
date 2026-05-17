@@ -2,9 +2,9 @@
 @config "../tailwind.config.js";
 
 @theme {
-  --color-primary-light: #334155;
-  --color-primary: #0F172A;
-  --color-primary-dark: #020617;
+  --color-primary-light: #EDE9FE;
+  --color-primary: #7C3AED;
+  --color-primary-dark: #5B21B6;
   --color-accent: #F59E0B;
   --color-accent-hover: #D97706;
   --color-background: #F9FAFB;
@@ -12,7 +12,7 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 antialiased font-sans;
+    @apply bg-white text-slate-800 antialiased font-sans;
   }
 }
 
@@ -37,6 +37,23 @@
 }
 
 /* =============================== */
+/* ANNOUNCEMENT MARQUEE ANIMATION  */
+/* =============================== */
+
+@keyframes marqueeScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-ticker {
+  animation: marqueeScroll 30s linear infinite;
+}
+
+.animate-marquee-ticker:hover {
+  animation-play-state: paused;
+}
+
+/* =============================== */
 /* CATEGORY AUTO SCROLL ANIMATION  */
 /* =============================== */
 
@@ -46,7 +63,7 @@
 }
 
 .animate-category-scroll {
-  animation: categoryScroll 22s linear infinite;
+  animation: categoryScroll 24s linear infinite;
 }
 
 .animate-category-scroll:hover {

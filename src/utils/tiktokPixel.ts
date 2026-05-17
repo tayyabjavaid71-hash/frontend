@@ -163,7 +163,8 @@ export type TikTokEventName =
   | 'InitiateCheckout'
   | 'PlaceAnOrder'
   | 'CompleteRegistration'
-  | 'Purchase';
+  | 'Purchase'
+  | 'CompletePayment';
 
 export interface TikTokProductData {
   id: string;
@@ -197,6 +198,7 @@ export function trackTikTokEvent(
     PlaceAnOrder: 'order-session',
     CompleteRegistration: 'registration',
     Purchase: 'purchase-order',
+    CompletePayment: 'complete-payment',
   };
 
   const payload = {
