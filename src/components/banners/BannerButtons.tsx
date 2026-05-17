@@ -29,38 +29,42 @@ const BannerButtonItem: React.FC<{ btn: BannerButton; bannerId: string; index: n
   const isPrimary = index === 0;
 
   // Resolved colors — use DB values or smart defaults based on slot
-  const defaultBg     = isPrimary ? '#FBBF24'                  : 'rgba(255,255,255,0.12)';
-  const defaultColor  = isPrimary ? '#1a0a2e'                  : '#ffffff';
-  const defaultHoverBg = isPrimary ? '#F59E0B'                 : 'rgba(255,255,255,0.22)';
+  // Primary: deep amber-gold with crisp black text (high contrast, premium)
+  // Secondary: white with black text (clean, minimal, professional)
+  const defaultBg      = isPrimary ? '#F59E0B'                    : 'rgba(255,255,255,0.95)';
+  const defaultColor   = isPrimary ? '#0a0a0a'                    : '#111111';
+  const defaultHoverBg = isPrimary ? '#D97706'                    : '#ffffff';
   const defaultShadow  = isPrimary
-    ? '0 8px 32px rgba(251,191,36,0.45), 0 2px 8px rgba(0,0,0,0.3)'
-    : '0 4px 16px rgba(0,0,0,0.2)';
+    ? '0 8px 32px rgba(245,158,11,0.5), 0 2px 8px rgba(0,0,0,0.25)'
+    : '0 4px 20px rgba(0,0,0,0.18)';
 
-  const bg     = hovered
+  const bg    = hovered
     ? (btn.hover_background || defaultHoverBg)
     : (btn.background_color || defaultBg);
-  const color  = hovered
+  const color = hovered
     ? (btn.hover_color || defaultColor)
     : (btn.text_color  || defaultColor);
 
-  const border = isPrimary && !btn.border_color
-    ? undefined
-    : `1.5px solid ${btn.border_color || 'rgba(255,255,255,0.35)'}`;
+  const border = isPrimary
+    ? (btn.border_color ? `1.5px solid ${btn.border_color}` : 'none')
+    : `1.5px solid ${btn.border_color || 'rgba(0,0,0,0.15)'}`;
 
   const style: React.CSSProperties = {
     backgroundColor: bg,
     color,
     border,
-    borderRadius:   btn.border_radius ?? (isPrimary ? '12px' : '12px'),
+    borderRadius:   btn.border_radius ?? '12px',
     padding:        btn.padding       ?? (isPrimary ? '14px 32px' : '13px 28px'),
     boxShadow:      hovered
       ? (btn.shadow_style ?? defaultShadow)
-      : (isPrimary ? '0 4px 20px rgba(251,191,36,0.3), 0 2px 6px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.15)'),
-    backdropFilter:  !isPrimary ? 'blur(8px)' : undefined,
-    WebkitBackdropFilter: !isPrimary ? 'blur(8px)' : undefined,
+      : (isPrimary
+          ? '0 4px 16px rgba(245,158,11,0.35), 0 2px 6px rgba(0,0,0,0.15)'
+          : '0 2px 10px rgba(0,0,0,0.12)'),
+    backdropFilter:  !isPrimary ? 'blur(12px)' : undefined,
+    WebkitBackdropFilter: !isPrimary ? 'blur(12px)' : undefined,
     fontSize:       '0.875rem',
     fontWeight:     700,
-    letterSpacing:  '0.01em',
+    letterSpacing:  '0.02em',
     display:        'inline-flex',
     alignItems:     'center',
     gap:            '8px',
