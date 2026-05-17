@@ -3,9 +3,8 @@ import type { BannerButton } from '../../types/banner';
 import { trackBannerEvent } from '../../services/bannerService';
 
 interface BannerButtonsProps {
-  buttons:  BannerButton[];
-  bannerId: string;
-  /** Spacing between buttons — defaults to flex wrap gap-3 */
+  buttons:    BannerButton[];
+  bannerId:   string;
   className?: string;
 }
 
@@ -14,39 +13,60 @@ export const BannerButtons: React.FC<BannerButtonsProps> = ({ buttons, bannerId,
 
   return (
     <div className={`flex flex-wrap gap-3 ${className ?? ''}`}>
-      {buttons.map(btn => (
-        <BannerButtonItem key={btn.id} btn={btn} bannerId={bannerId} />
+      {buttons.map((btn, idx) => (
+        <BannerButtonItem key={btn.id} btn={btn} bannerId={bannerId} index={idx} />
       ))}
     </div>
   );
 };
 
-/** Individual button with hover state support */
-const BannerButtonItem: React.FC<{ btn: BannerButton; bannerId: string }> = ({ btn, bannerId }) => {
+const BannerButtonItem: React.FC<{ btn: BannerButton; bannerId: string; index: number }> = ({
+  btn, bannerId, index,
+}) => {
   const [hovered, setHovered] = useState(false);
 
-  const bg    = hovered && btn.hover_background ? btn.hover_background : (btn.background_color ?? '#FBBF24');
-  const color = hovered && btn.hover_color       ? btn.hover_color       : (btn.text_color       ?? '#000000');
+  // Primary (index 0) = solid filled; secondary (index 1+) = glass ghost
+  const isPrimary = index === 0;
+
+  // Resolved colors — use DB values or smart defaults based on slot
+  const defaultBg     = isPrimary ? '#FBBF24'                  : 'rgba(255,255,255,0.12)';
+  const defaultColor  = isPrimary ? '#1a0a2e'                  : '#ffffff';
+  const defaultHoverBg = isPrimary ? '#F59E0B'                 : 'rgba(255,255,255,0.22)';
+  const defaultShadow  = isPrimary
+    ? '0 8px 32px rgba(251,191,36,0.45), 0 2px 8px rgba(0,0,0,0.3)'
+    : '0 4px 16px rgba(0,0,0,0.2)';
+
+  const bg     = hovered
+    ? (btn.hover_background || defaultHoverBg)
+    : (btn.background_color || defaultBg);
+  const color  = hovered
+    ? (btn.hover_color || defaultColor)
+    : (btn.text_color  || defaultColor);
+
+  const border = isPrimary && !btn.border_color
+    ? undefined
+    : `1.5px solid ${btn.border_color || 'rgba(255,255,255,0.35)'}`;
 
   const style: React.CSSProperties = {
     backgroundColor: bg,
     color,
-    border:       btn.border_color ? `2px solid ${btn.border_color}` : undefined,
-    borderRadius: btn.border_radius ?? '14px',
-    padding:      btn.padding       ?? '14px 28px',
-    boxShadow:    btn.shadow_style  ?? undefined,
-    fontSize:     '0.875rem',
-    fontWeight:   700,
-    display:      'inline-flex',
-    alignItems:   'center',
-    gap:          '8px',
+    border,
+    borderRadius:   btn.border_radius ?? (isPrimary ? '12px' : '12px'),
+    padding:        btn.padding       ?? (isPrimary ? '14px 32px' : '13px 28px'),
+    boxShadow:      hovered
+      ? (btn.shadow_style ?? defaultShadow)
+      : (isPrimary ? '0 4px 20px rgba(251,191,36,0.3), 0 2px 6px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.15)'),
+    backdropFilter:  !isPrimary ? 'blur(8px)' : undefined,
+    WebkitBackdropFilter: !isPrimary ? 'blur(8px)' : undefined,
+    fontSize:       '0.875rem',
+    fontWeight:     700,
+    letterSpacing:  '0.01em',
+    display:        'inline-flex',
+    alignItems:     'center',
+    gap:            '8px',
     textDecoration: 'none',
-    transition:   'all 0.2s ease',
-    transform:    hovered ? 'scale(1.04)' : 'scale(1)',
-  };
-
-  const handleClick = () => {
-    trackBannerEvent(bannerId, 'click', btn.id).catch(() => {/* silent */});
+    transition:     'all 0.22s cubic-bezier(0.4,0,0.2,1)',
+    transform:      hovered ? 'translateY(-2px) scale(1.03)' : 'translateY(0) scale(1)',
   };
 
   return (
@@ -57,11 +77,17 @@ const BannerButtonItem: React.FC<{ btn: BannerButton; bannerId: string }> = ({ b
       style={style}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={handleClick}
-      className="active:scale-95"
+      onClick={() => trackBannerEvent(bannerId, 'click', btn.id).catch(() => {})}
+      className="active:scale-95 active:translate-y-0"
     >
-      {btn.icon && <span aria-hidden="true">{btn.icon}</span>}
+      {btn.icon && <span aria-hidden="true" style={{ fontSize: '1em' }}>{btn.icon}</span>}
       {btn.text}
+      {/* Primary button gets a subtle arrow */}
+      {isPrimary && !btn.icon && (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ opacity: 0.8, transition: 'transform 0.2s', transform: hovered ? 'translateX(3px)' : 'translateX(0)' }}>
+          <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
     </a>
   );
 };
