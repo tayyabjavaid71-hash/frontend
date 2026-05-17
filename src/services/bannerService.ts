@@ -2,7 +2,11 @@
 import type { Banner, BannerButton, BannerFormData, BannerAnalyticsSummary } from '../types/banner';
 
 // ── Determine API base URL ───────────────────────────────────────────────────
-const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
+// VITE_API_URL may be bare host (http://localhost:3001) or already include /api
+const _rawBase = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+const API_BASE = _rawBase.endsWith('/api')
+  ? _rawBase
+  : `${_rawBase.replace(/\/$/, '')}/api`;
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
