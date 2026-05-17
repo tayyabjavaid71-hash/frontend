@@ -22,6 +22,9 @@ import { ReturnPage } from '../pages/ReturnPage';
 import { AdminShippingPage } from '../pages/admin/Shipping';
 import { AdminReturnsPage } from '../pages/admin/Returns';
 import { AdminEmailLogs } from '../pages/admin/EmailLogs';
+import { BannerManager } from '../pages/admin/BannerManager';
+import { CreateBanner } from '../pages/admin/CreateBanner';
+import { EditBanner } from '../pages/admin/EditBanner';
 import { PrivacyPolicyPage } from '../pages/PrivacyPolicyPage';
 
 const AppRoutes: React.FC = () => {
@@ -62,6 +65,9 @@ const AppRoutes: React.FC = () => {
         <Route path="shipping" element={<AdminShippingPage />} />
         <Route path="returns" element={<AdminReturnsPage />} />
         <Route path="email-logs" element={<AdminEmailLogs />} />
+        <Route path="banners" element={<BannerManager />} />
+        <Route path="banners/create" element={<CreateBanner />} />
+        <Route path="banners/:id/edit" element={<EditBanner />} />
       </Route>
 
       {/* Fallback */}
