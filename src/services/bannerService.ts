@@ -1,99 +1,124 @@
-import { supabase } from './supabaseClient';
-import type { Banner, BannerButton, BannerCreateInput, BannerUpdateInput, ButtonStyle } from '../types/banner';
+﻿import { supabase } from './supabaseClient';
+import type { Banner, BannerButton, BannerFormData, BannerAnalyticsSummary } from '../types/banner';
 
-// ── Public API ───────────────────────────────────────
+// ── Determine API base URL ───────────────────────────────────────────────────
+const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
 
-/** Fetch all currently active banners (with their buttons) */
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    ...init,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { error?: string }).error ?? `API error ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+// ── Public: active banners for the hero slider ───────────────────────────────
 export async function getBanners(): Promise<Banner[]> {
-  const { data, error } = await supabase
-    .from('banners')
-    .select(`
-      *,
-      banner_buttons (*)
-    `)
-    .eq('is_active', true)
-    .or('start_date.is.null,start_date.lte.' + new Date().toISOString())
-    .or('end_date.is.null,end_date.gte.'     + new Date().toISOString())
-    .order('sort_order', { ascending: true });
-
-  if (error) throw error;
-  // Sort buttons inside each banner
-  return (data as Banner[]).map(b => ({
-    ...b,
-    banner_buttons: b.banner_buttons?.sort((a, b) => a.sort_order - b.sort_order) ?? [],
-  }));
+  return apiFetch<Banner[]>('/banners/active');
 }
 
-// ── Admin API ─────────────────────────────────────────
-
-/** Fetch ALL banners (active + inactive) — admin use */
+// ── Admin: all banners (incl. inactive) ──────────────────────────────────────
 export async function getAllBannersAdmin(): Promise<Banner[]> {
-  const { data, error } = await supabase
-    .from('banners')
-    .select(`*, banner_buttons (*)`)
-    .order('sort_order', { ascending: true });
-
-  if (error) throw error;
-  return data as Banner[];
+  return apiFetch<Banner[]>('/banners');
 }
 
-/** Create a new banner */
-export async function createBanner(input: BannerCreateInput): Promise<Banner> {
-  const { data, error } = await supabase
-    .from('banners')
-    .insert(input)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Banner;
+// ── Admin: single banner ─────────────────────────────────────────────────────
+export async function getBannerById(id: string): Promise<Banner> {
+  return apiFetch<Banner>(`/banners/${id}`);
 }
 
-/** Update an existing banner */
-export async function updateBanner({ id, ...rest }: BannerUpdateInput): Promise<Banner> {
-  const { data, error } = await supabase
-    .from('banners')
-    .update(rest)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Banner;
+// ── Admin: create ─────────────────────────────────────────────────────────────
+export async function createBanner(data: Omit<BannerFormData, 'buttons'> & { buttons?: Partial<BannerButton>[] }): Promise<Banner> {
+  return apiFetch<Banner>('/banners', { method: 'POST', body: JSON.stringify(data) });
 }
 
-/** Delete a banner (cascade removes buttons + analytics) */
+// ── Admin: update ─────────────────────────────────────────────────────────────
+export async function updateBanner(id: string, data: Partial<BannerFormData> & { buttons?: Partial<BannerButton>[] }): Promise<Banner> {
+  return apiFetch<Banner>(`/banners/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+}
+
+// ── Admin: delete ─────────────────────────────────────────────────────────────
 export async function deleteBanner(id: string): Promise<void> {
-  const { error } = await supabase.from('banners').delete().eq('id', id);
-  if (error) throw error;
+  await apiFetch(`/banners/${id}`, { method: 'DELETE' });
 }
 
-/** Toggle is_active for a banner */
+// ── Admin: toggle active ─────────────────────────────────────────────────────
 export async function toggleBannerActive(id: string, is_active: boolean): Promise<void> {
-  const { error } = await supabase
-    .from('banners')
-    .update({ is_active })
-    .eq('id', id);
-  if (error) throw error;
+  await apiFetch(`/banners/${id}/toggle`, { method: 'PATCH', body: JSON.stringify({ is_active }) });
 }
 
-/** Reorder banners — pass ordered array of { id, sort_order } */
-export async function reorderBanners(items: { id: string; sort_order: number }[]): Promise<void> {
-  const updates = items.map(({ id, sort_order }) =>
-    supabase.from('banners').update({ sort_order }).eq('id', id)
+// ── Admin: reorder ────────────────────────────────────────────────────────────
+export async function reorderBanners(items: Array<{ id: string; sort_order: number }>): Promise<void> {
+  await apiFetch('/banners/reorder', { method: 'POST', body: JSON.stringify({ items }) });
+}
+
+// ── Version history ──────────────────────────────────────────────────────────
+export async function getBannerVersions(bannerId: string): Promise<import('../types/banner').BannerVersion[]> {
+  return apiFetch<import('../types/banner').BannerVersion[]>(
+    `/banners/${bannerId}/versions`
   );
-  await Promise.all(updates);
 }
 
-// ── Banner Buttons ────────────────────────────────────
+export async function restoreBannerVersion(bannerId: string, version_id: string): Promise<Banner> {
+  return apiFetch<Banner>(`/banners/${bannerId}/restore`, {
+    method: 'POST',
+    body: JSON.stringify({ version_id }),
+  });
+}
 
+// ── Analytics ────────────────────────────────────────────────────────────────
+export async function getBannerAnalytics(bannerId: string): Promise<BannerAnalyticsSummary> {
+  return apiFetch<BannerAnalyticsSummary>(`/banners/${bannerId}/analytics`);
+}
+
+export async function getAllAnalyticsSummary(): Promise<Record<string, { impressions: number; clicks: number }>> {
+  return apiFetch('/banners/analytics');
+}
+
+// ── Image Upload (direct to Supabase Storage) ────────────────────────────────
+export async function uploadBannerImage(file: File): Promise<string> {
+  const ext  = file.name.split('.').pop() ?? 'jpg';
+  const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('banner-images')
+    .upload(path, file, { contentType: file.type, upsert: false });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage.from('banner-images').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ── Analytics: track event (client-side, direct Supabase) ─────────────────
+export async function trackBannerEvent(
+  banner_id: string,
+  event_type: 'impression' | 'click',
+  button_id?: string
+): Promise<void> {
+  const device =
+    /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+
+  await supabase.from('banner_analytics').insert({
+    banner_id,
+    event_type,
+    button_id:  button_id ?? null,
+    device,
+    user_agent: navigator.userAgent,
+  });
+}
+
+// ── Button helpers (direct Supabase for admin) ────────────────────────────────
 export async function addBannerButton(button: Omit<BannerButton, 'id'>): Promise<BannerButton> {
   const { data, error } = await supabase
     .from('banner_buttons')
     .insert(button)
     .select()
     .single();
-
   if (error) throw error;
   return data as BannerButton;
 }
@@ -106,50 +131,4 @@ export async function updateBannerButton(id: string, updates: Partial<BannerButt
 export async function deleteBannerButton(id: string): Promise<void> {
   const { error } = await supabase.from('banner_buttons').delete().eq('id', id);
   if (error) throw error;
-}
-
-// ── Button Styles ─────────────────────────────────────
-
-export async function getButtonStyles(): Promise<ButtonStyle[]> {
-  const { data, error } = await supabase
-    .from('button_styles')
-    .select('*')
-    .order('name');
-  if (error) throw error;
-  return data as ButtonStyle[];
-}
-
-// ── Image Upload ──────────────────────────────────────
-
-/**
- * Upload a banner image file to Supabase Storage (bucket: banner-images).
- * Returns the public URL.
- */
-export async function uploadBannerImage(file: File): Promise<string> {
-  const ext = file.name.split('.').pop() ?? 'jpg';
-  const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from('banner-images')
-    .upload(path, file, { contentType: file.type, upsert: false });
-
-  if (uploadError) throw uploadError;
-
-  const { data } = supabase.storage.from('banner-images').getPublicUrl(path);
-  return data.publicUrl;
-}
-
-// ── Analytics ─────────────────────────────────────────
-
-export async function trackBannerEvent(
-  banner_id: string,
-  event_type: 'impression' | 'click',
-  button_id?: string
-): Promise<void> {
-  await supabase.from('banner_analytics').insert({
-    banner_id,
-    event_type,
-    button_id: button_id ?? null,
-    user_agent: navigator.userAgent,
-  });
 }

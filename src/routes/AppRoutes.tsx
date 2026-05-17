@@ -25,6 +25,7 @@ import { AdminEmailLogs } from '../pages/admin/EmailLogs';
 import { BannerManager } from '../pages/admin/BannerManager';
 import { CreateBanner } from '../pages/admin/CreateBanner';
 import { EditBanner } from '../pages/admin/EditBanner';
+import { BannerAnalytics } from '../pages/admin/BannerAnalytics';
 import { PrivacyPolicyPage } from '../pages/PrivacyPolicyPage';
 
 const AppRoutes: React.FC = () => {
@@ -68,6 +69,7 @@ const AppRoutes: React.FC = () => {
         <Route path="banners" element={<BannerManager />} />
         <Route path="banners/create" element={<CreateBanner />} />
         <Route path="banners/:id/edit" element={<EditBanner />} />
+        <Route path="banners/:id/analytics" element={<BannerAnalytics />} />
       </Route>
 
       {/* Fallback */}

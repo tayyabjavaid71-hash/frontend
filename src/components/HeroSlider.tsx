@@ -1,104 +1,225 @@
 ﻿import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { BannerSlide } from './banners/BannerSlide';
-import { useBannerSlider } from '../hooks/useBannerSlider';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Navigation, Pagination, EffectFade, EffectCreative } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
+import 'swiper/css/effect-creative';
 
+import { useBannerSlider } from '../hooks/useBannerSlider';
+import { trackBannerEvent } from '../services/bannerService';
+import type { Banner } from '../types/banner';
+
+// ── Build background style from banner data ──────────────────────────────────
+function buildBackground(banner: Banner): React.CSSProperties {
+  if (banner.background_type === 'solid') {
+    return { backgroundColor: banner.background_color ?? banner.gradient_start };
+  }
+  if (banner.background_type === 'image' && banner.desktop_image) {
+    return {
+      backgroundImage: `url(${banner.desktop_image})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    };
+  }
+  return {
+    background: `linear-gradient(135deg, ${banner.gradient_start}, ${banner.gradient_end})`,
+  };
+}
+
+// ── Individual slide component ────────────────────────────────────────────────
+const SlideContent: React.FC<{ banner: Banner }> = ({ banner }) => {
+  const position =
+    banner.content_position === 'right' ? 'items-end text-right' :
+    banner.content_position === 'center' ? 'items-center text-center' :
+    'items-start text-left';
+
+  return (
+    <div
+      className="relative w-full h-full flex"
+      style={buildBackground(banner)}
+    >
+      {/* Product image (right side, 55%) */}
+      {banner.desktop_image && banner.background_type !== 'image' && (
+        <div className="absolute inset-y-0 right-0 w-[58%] overflow-hidden">
+          <img
+            src={banner.desktop_image}
+            alt={banner.title}
+            className="w-full h-full object-cover object-top"
+            loading="eager"
+          />
+          {/* Blend overlay */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(to right, ${banner.gradient_start} 0%, ${banner.gradient_start}bb 20%, transparent 55%)`,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Text content */}
+      <div
+        className={`relative z-10 flex flex-col justify-center ${position} w-1/2 px-8 md:px-12 lg:px-16`}
+      >
+        {/* Subtitle / brand label */}
+        {banner.subtitle && (
+          <span
+            className="text-xs font-black uppercase tracking-[0.25em] opacity-70 mb-3"
+            style={{ color: banner.text_color, fontFamily: banner.font_family }}
+          >
+            {banner.subtitle}
+          </span>
+        )}
+
+        {/* Title */}
+        <h1
+          className="font-black leading-tight whitespace-pre-line drop-shadow-lg mb-4"
+          style={{
+            color:      banner.text_color,
+            fontFamily: banner.font_family,
+            fontSize:   `clamp(28px, 4vw, ${banner.title_size})`,
+          }}
+        >
+          {banner.title}
+        </h1>
+
+        {/* Description */}
+        {banner.description && (
+          <p
+            className="max-w-xs leading-relaxed mb-6 opacity-85"
+            style={{
+              color:      banner.text_color,
+              fontFamily: banner.font_family,
+              fontSize:   `clamp(13px, 1.4vw, ${banner.description_size})`,
+            }}
+          >
+            {banner.description}
+          </p>
+        )}
+
+        {/* CTA Buttons */}
+        {banner.banner_buttons && banner.banner_buttons.length > 0 && (
+          <div className="flex flex-wrap gap-3">
+            {banner.banner_buttons.map(btn => (
+              <a
+                key={btn.id}
+                href={btn.link}
+                target={btn.open_new_tab ? '_blank' : '_self'}
+                rel={btn.open_new_tab ? 'noopener noreferrer' : undefined}
+                onClick={() =>
+                  trackBannerEvent(banner.id, 'click', btn.id).catch(() => {/* silent */})
+                }
+                className="inline-flex items-center gap-2 font-bold transition-all duration-200 hover:opacity-90 hover:scale-105 active:scale-95 shadow-md no-underline"
+                style={{
+                  backgroundColor: btn.background_color ?? '#FBBF24',
+                  color:           btn.text_color       ?? '#000',
+                  border:          btn.border_color ? `2px solid ${btn.border_color}` : undefined,
+                  borderRadius:    btn.border_radius ?? '14px',
+                  padding:         btn.padding       ?? '14px 28px',
+                  boxShadow:       btn.shadow_style  ?? undefined,
+                  fontSize:        '0.875rem',
+                }}
+              >
+                {btn.icon && <span>{btn.icon}</span>}
+                {btn.text}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ── Main HeroSlider ───────────────────────────────────────────────────────────
 export const HeroSlider: React.FC = () => {
-  const {
-    banners,
-    isLoading,
-    activeIndex,
-    goTo,
-    goNext,
-    goPrev,
-    pause,
-    resume,
-  } = useBannerSlider();
+  const { banners, isLoading } = useBannerSlider();
 
   if (isLoading) {
     return (
-      <div className="flex-1 h-[420px] md:h-[520px] lg:h-[580px] bg-violet-900 animate-pulse rounded-xl" />
+      <div className="flex-1 rounded-xl bg-violet-900 animate-pulse"
+           style={{ minHeight: 'clamp(400px, 45vw, 600px)' }} />
     );
   }
 
   if (banners.length === 0) {
     return (
-      <div className="flex-1 h-[420px] md:h-[520px] lg:h-[580px] bg-violet-900 flex items-center justify-center text-white/50 rounded-xl">
+      <div className="flex-1 rounded-xl bg-violet-900 flex items-center justify-center text-white/40"
+           style={{ minHeight: 'clamp(400px, 45vw, 600px)' }}>
         No banners configured
       </div>
     );
   }
 
+  const firstBanner = banners[0];
+  const effect = firstBanner?.animation_type === 'fade' ? 'fade'
+    : firstBanner?.animation_type === 'zoom'  ? 'creative'
+    : undefined;
+
   return (
-    <div
-      className="relative flex-1 overflow-hidden rounded-xl shadow-xl"
-      style={{ minHeight: '420px', height: 'clamp(420px, 45vw, 600px)' }}
-      onMouseEnter={pause}
-      onMouseLeave={resume}
-    >
-      {/* Slides */}
-      {banners.map((banner, i) => (
-        <BannerSlide key={banner.id} banner={banner} isActive={i === activeIndex} />
-      ))}
-
-      {/* Progress bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/10 z-20">
-        <div
-          key={`${activeIndex}-progress`}
-          className="h-full bg-white/60"
-          style={{
-            animation: `slideProgress ${banners[activeIndex]?.slide_duration ?? 4500}ms linear forwards`,
-          }}
-        />
-      </div>
-
-      {/* Prev / Next */}
-      {banners.length > 1 && (
-        <>
-          <button
-            onClick={goPrev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/30 hover:bg-black/60 text-white flex items-center justify-center transition-colors"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={goNext}
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/30 hover:bg-black/60 text-white flex items-center justify-center transition-colors"
-            aria-label="Next slide"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </>
-      )}
-
-      {/* Dot indicators */}
-      {banners.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
-          {banners.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              className={`rounded-full transition-all duration-300 ${
-                i === activeIndex
-                  ? 'w-5 h-2 bg-white'
-                  : 'w-2 h-2 bg-white/40 hover:bg-white/70'
-              }`}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Slide counter */}
-      <span className="absolute top-4 right-4 z-20 text-xs font-bold text-white/60">
-        {activeIndex + 1} / {banners.length}
-      </span>
+    <div className="flex-1 rounded-xl overflow-hidden shadow-xl"
+         style={{ minHeight: 'clamp(400px, 45vw, 600px)' }}>
+      <Swiper
+        modules={[Autoplay, Navigation, Pagination, EffectFade, EffectCreative]}
+        effect={effect}
+        creativeEffect={effect === 'creative' ? {
+          prev:  { shadow: true, translate: ['-120%', 0, -500] },
+          next:  { translate: ['100%', 0, 0] },
+        } : undefined}
+        loop={banners.length > 1}
+        autoplay={
+          banners.some(b => b.auto_slide)
+            ? { delay: firstBanner?.slide_duration ?? 5000, disableOnInteraction: false }
+            : false
+        }
+        navigation
+        pagination={{ clickable: true }}
+        className="w-full h-full"
+        style={{ height: 'clamp(400px, 45vw, 600px)' } as React.CSSProperties}
+        onSlideChange={swiper => {
+          const banner = banners[swiper.realIndex];
+          if (banner) {
+            trackBannerEvent(banner.id, 'impression').catch(() => {/* silent */});
+          }
+        }}
+      >
+        {banners.map(banner => (
+          <SwiperSlide key={banner.id} className="w-full h-full">
+            <SlideContent banner={banner} />
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
       <style>{`
-        @keyframes slideProgress {
-          from { width: 0%; }
-          to   { width: 100%; }
+        .swiper-button-next,
+        .swiper-button-prev {
+          color: white !important;
+          background: rgba(0,0,0,0.3);
+          width: 36px !important;
+          height: 36px !important;
+          border-radius: 50%;
+          padding: 8px;
+        }
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+          font-size: 14px !important;
+          font-weight: 900;
+        }
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+          background: rgba(0,0,0,0.6);
+        }
+        .swiper-pagination-bullet {
+          background: rgba(255,255,255,0.5) !important;
+          width: 8px !important;
+          height: 8px !important;
+        }
+        .swiper-pagination-bullet-active {
+          background: white !important;
+          width: 20px !important;
+          border-radius: 4px !important;
         }
       `}</style>
     </div>
