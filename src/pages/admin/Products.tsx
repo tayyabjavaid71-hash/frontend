@@ -4,6 +4,14 @@ import { Plus, Edit2, Trash2, Search, AlertCircle, Loader2, Package } from 'luci
 import { motion } from 'framer-motion';
 import { ProductForm } from '../../components/admin/ProductForm';
 
+const formatPKR = (value: number) => {
+  return new Intl.NumberFormat('en-PK', {
+    style: 'currency',
+    currency: 'PKR',
+    maximumFractionDigits: 0,
+  }).format(value || 0);
+};
+
 export const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -133,8 +141,9 @@ export const AdminProducts: React.FC = () => {
                       </div>
                     </td>
                     <td className="p-6 text-center">
-                      <span className="font-black text-pink-600 text-lg">${p.price}</span>
-                      {p.old_price && <p className="text-xs text-slate-400 line-through">${p.old_price}</p>}
+                      <span className="font-black text-pink-600 text-lg">{formatPKR(Number(p.price))}</span>
+                      <p className="text-xs text-slate-400">${p.price}</p>
+                      {p.old_price && <p className="text-xs text-slate-400 line-through">{formatPKR(Number(p.old_price))}</p>}
                     </td>
                     <td className="p-6 text-center">
                       <span className={`font-bold text-sm ${p.stock > 10 ? 'text-green-600' : p.stock > 0 ? 'text-yellow-600' : 'text-red-600'}`}>
