@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { setApiToken } from '../services/api';
+import { API, setApiToken } from '../services/api';
 
 type AuthProfile = {
   id: string;
@@ -43,11 +43,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      const res = await fetch(`/api/users/${userId}`, {
+      const { data: json } = await API.get(`/users/${userId}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (res.ok) {
-        const json = await res.json();
+      if (json) {
         const u = json.user ?? {};
         setProfile({
           id:       u.id      ?? userId,
