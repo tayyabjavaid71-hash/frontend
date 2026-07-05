@@ -5,6 +5,7 @@ import { Mail, Lock, User as UserIcon, ArrowRight } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { logTikTokEvent } from '../services/tiktokEventLogger';
 import { identifyTikTokUser } from '../utils/tiktokPixel';
+import { API } from '../services/api';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -45,11 +46,7 @@ export const Register: React.FC = () => {
       }
 
       // 2. Save profile row in DB (only profiles table — users table has password_hash NOT NULL)
-      await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: userId, email, name, role: 'customer' }),
-      });
+      await API.post('/users', { id: userId, email, name, role: 'customer' });
 
       // If no session, Supabase requires email confirmation
       if (!data.session) {
